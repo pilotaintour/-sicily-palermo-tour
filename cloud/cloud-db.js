@@ -10,7 +10,14 @@ function pulisciVecchiItinerariDemo(lista) {
     return lista.filter(item => {
         if (!item) return false;
         const id = String(item.id || '');
-        return !(id === '1' || id === '2' || id === '3');
+        const title = String(item.title || '').toLowerCase().trim();
+        const price = String(item.price || '').toLowerCase().trim();
+
+        if (id === '1' || id === '2' || id === '3') return false;
+        if (title.includes('dsfsdf') || title.includes('sdfdsf') || title === 'test' || title === 'asdf' || title === 'prova') return false;
+        if (price.includes('dsfsdf') || price.includes('sdfdsf')) return false;
+
+        return true;
     });
 }
 
