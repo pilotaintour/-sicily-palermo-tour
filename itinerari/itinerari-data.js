@@ -565,3 +565,98 @@ function aggiornaMappaTourSelezionato(puntoNome) {
         gpsLink.innerHTML = `🧭 Avvia Navigatore GPS per <strong>${escapeHtml(puntoNome)}</strong>`;
     }
 }
+
+// Genera e apre la scheda PDF stampabile dell'itinerario selezionato
+function scaricaProgrammaTourPDF() {
+    if (!itinerarioSelezionatoAttuale) return;
+
+    const tour = itinerarioSelezionatoAttuale;
+    const printWin = window.open('', '_blank', 'width=880,height=950');
+    if (!printWin) {
+        alert('⚠️ Per favore abilita i popup nel tuo browser per scaricare il PDF del programma.');
+        return;
+    }
+
+    const tappeList = (tour.tappe && Array.isArray(tour.tappe) && tour.tappe.length > 0)
+        ? tour.tappe
+        : ['Incontro con la guida nel punto stabilito', 'Passeggiata guidata e visita ai monumenti storici', 'Conclusione del tour e consigli personalizzati'];
+
+    const pickupList = (tour.pickupPoints && Array.isArray(tour.pickupPoints) && tour.pickupPoints.length > 0)
+        ? tour.pickupPoints.join(' • ')
+        : (tour.meetingPoint || 'Palermo Centro');
+
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="it">
+        <head>
+            <meta charset="UTF-8">
+            <title>Programma Tour - ${escapeHtml(tour.title)}</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 35px; color: #0f172a; line-height: 1.65; background: #ffffff; }
+                .header { text-align: center; border-bottom: 2.5px solid #0b2545; padding-bottom: 18px; margin-bottom: 25px; }
+                .header img { max-width: 280px; height: auto; margin-bottom: 12px; }
+                .title { color: #0b2545; font-size: 1.85rem; font-weight: 800; margin: 0 0 8px 0; }
+                .badge-row { display: flex; justify-content: center; gap: 20px; font-weight: 700; color: #0369a1; margin-bottom: 10px; font-size: 0.95rem; }
+                .box { background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px; }
+                .box-title { color: #0b2545; font-size: 1.12rem; font-weight: 800; margin-bottom: 10px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+                .timeline-item { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px; font-size: 0.95rem; }
+                .num { background: #0b2545; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+                .footer { text-align: center; font-size: 0.88rem; color: #64748b; border-top: 1.5px solid #cbd5e1; padding-top: 18px; margin-top: 35px; line-height: 1.6; }
+                @media print { .no-print { display: none !important; } }
+            </style>
+        </head>
+        <body>
+            <div class="no-print" style="text-align:center; margin-bottom:25px;">
+                <button onclick="window.print()" style="background:#0b2545; color:white; border:none; padding:14px 28px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:1.05rem; box-shadow: 0 4px 14px rgba(11,37,69,0.3);">🖨️ Stampa / Salva in PDF</button>
+            </div>
+
+            <div class="header">
+                <img src="${window.location.origin + window.location.pathname.replace('index.html', '')}logo.svg" alt="Sicily Palermo Tour">
+                <h1 class="title">${escapeHtml(tour.title)}</h1>
+                <div class="badge-row">
+                    <span>🏛️ Categoria: ${escapeHtml(tour.category || 'Tour')}</span>
+                    <span>⏱️ Durata: ${escapeHtml(tour.duration || '3 Ore')}</span>
+                    <span>💰 Prezzo: ${escapeHtml(tour.price || 'Da 25€')}</span>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-title">📍 Punti d'Incontro &amp; Raccolta</div>
+                <p><strong>Ritrovo &amp; Raccolta:</strong> ${escapeHtml(pickupList)}</p>
+                ${tour.meetingInstructions ? `<p style="margin-top:8px; color:#334155;"><strong>🎒 Note per il Ritrovo:</strong> ${escapeHtml(tour.meetingInstructions)}</p>` : ''}
+            </div>
+
+            <div class="box">
+                <div class="box-title">📖 Panoramica del Tour</div>
+                <p style="white-space: pre-wrap; font-size:0.95rem; color:#334155;">${escapeHtml(tour.fullDesc || tour.shortDesc || '')}</p>
+            </div>
+
+            <div class="box">
+                <div class="box-title">📍 Tappe e Punti di Interesse dell'Itinerario</div>
+                ${tappeList.map((tappa, idx) => `
+                    <div class="timeline-item">
+                        <span class="num">${idx + 1}</span>
+                        <span>${escapeHtml(tappa)}</span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="footer">
+                <strong>Sicily Palermo Tour</strong> - PI 07150890825<br>
+                Info &amp; Prenotazioni: 📞 +39 340 1234567 | ✉️ pilotaintour13@gmail.com | 🌐 https://sicilypalermotours.com
+            </div>
+
+            <script>
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 400);
+                };
+            </script>
+        </body>
+        </html>
+    `;
+
+    printWin.document.write(htmlContent);
+    printWin.document.close();
+}

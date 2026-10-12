@@ -212,8 +212,9 @@
                 </div>
             </div>
 
-            <div class="modal-footer">
-                <button id="btn-modal-prenota-calendario" class="btn-tour" onclick="vaiAllaPaginaPrenotazione()">📅 Prenota Tour</button>
+            <div class="modal-footer" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="btn-modal-prenota-calendario" class="btn-tour" style="flex: 1; min-width: 160px;" onclick="vaiAllaPaginaPrenotazione()">📅 Prenota Tour</button>
+                <button id="btn-modal-scarica-pdf" class="btn-secondary" style="background: #0284c7; color: #ffffff; border: none; font-weight: 800; padding: 12px 20px; border-radius: 12px; cursor: pointer;" onclick="scaricaProgrammaTourPDF()">📥 Scarica Itinerario (PDF)</button>
                 <button class="btn-secondary" onclick="chiudiModal()">Chiudi</button>
             </div>
         </div>
