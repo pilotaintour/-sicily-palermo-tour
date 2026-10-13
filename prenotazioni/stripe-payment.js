@@ -7,9 +7,9 @@ const STRIPE_PK_KEY = 'spt_stripe_pk';
 const STRIPE_SK_KEY = 'spt_stripe_sk';
 
 // Key ufficiali di Test Stripe dell'Amministratore
-const DEFAULT_STRIPE_PK = 'pk_test_51UJGJt383oZgJlwEDcZkzbdzODlKRxPfanpz31XrWbmJDpmQnCnsA3qPLtCIn8FoR5DlTX2rqnzAmr4UWdo1bo2k00tAdmIYH1';
-const DEFAULT_SK_P1 = 'c2tfdGVzdF81MVVKR0p0Mzgzb1pnSmx3RWdlQTQ4Ukx5UjNnV0JTS2FXekFhRmpzODB3SmNSbmJjc1BR';
-const DEFAULT_SK_P2 = 'dHJvU1RFZzVmYXQxSm5Qc2FvNDA0dG9pZWNiYzNoWnRPSU5kQTAwRXBCVnJjWWQ=';
+const DEFAULT_STRIPE_PK = 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY';
+const DEFAULT_SK_P1 = 'YOUR_STRIPE_SECRET_KEY_PART_1';
+const DEFAULT_SK_P2 = 'YOUR_STRIPE_SECRET_KEY_PART_2';
 
 function selezionaMetodoPagamento(tipo) {
     const boxCard = document.getElementById('box-metodo-card');
