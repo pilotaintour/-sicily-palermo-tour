@@ -259,6 +259,15 @@ function toggleTuttiGiorni(checked) {
     });
 }
 
+function gestisciTipoDisponibilitaTour(type) {
+    const boxDate = document.getElementById('box-single-fixed-date');
+    if (type === 'singleDate') {
+        if (boxDate) boxDate.classList.remove('hidden');
+    } else {
+        if (boxDate) boxDate.classList.add('hidden');
+    }
+}
+
 async function salvaItinerario(event) {
     event.preventDefault();
 
@@ -270,6 +279,10 @@ async function salvaItinerario(event) {
     const pickupPoints = puntiRaccoltaCorrenti.map(p => p.trim()).filter(Boolean);
     const meetingPoint = pickupPoints.length > 0 ? pickupPoints.join(' • ') : 'Palermo Centro';
     const meetingInstructions = document.getElementById('meeting-instructions') ? document.getElementById('meeting-instructions').value.trim() : '';
+
+    const availabilityTypeEl = document.querySelector('input[name="availability-type"]:checked');
+    const availabilityType = availabilityTypeEl ? availabilityTypeEl.value : 'weekly';
+    const singleFixedDate = document.getElementById('single-fixed-date-input') ? document.getElementById('single-fixed-date-input').value : '';
 
     const featured = document.getElementById('featured').value;
     const isConsigliatoEl = document.getElementById('is-consigliato');
@@ -303,14 +316,14 @@ async function salvaItinerario(event) {
     if (id) {
         itinerari = itinerari.map(item => {
             if (String(item.id) === String(id)) {
-                return { id, title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc };
+                return { id, title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availabilityType, singleFixedDate, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc };
             }
             return item;
         });
     } else {
         const nuovoItinerario = {
             id: Date.now().toString(),
-            title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc
+            title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availabilityType, singleFixedDate, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc
         };
         itinerari.unshift(nuovoItinerario);
     }
@@ -347,6 +360,16 @@ function preparaModifica(id) {
 
     if (document.getElementById('meeting-instructions')) {
         document.getElementById('meeting-instructions').value = item.meetingInstructions || '';
+    }
+
+    const availType = item.availabilityType || 'weekly';
+    const radioType = document.querySelector(`input[name="availability-type"][value="${availType}"]`);
+    if (radioType) {
+        radioType.checked = true;
+        gestisciTipoDisponibilitaTour(availType);
+    }
+    if (document.getElementById('single-fixed-date-input')) {
+        document.getElementById('single-fixed-date-input').value = item.singleFixedDate || '';
     }
     document.getElementById('featured').value = item.featured || 'false';
     const isConsigliatoEl = document.getElementById('is-consigliato');
@@ -414,6 +437,15 @@ function resetForm() {
     document.getElementById('itinerary-id').value = '';
     if (document.getElementById('pickup-points')) document.getElementById('pickup-points').value = '';
     if (document.getElementById('meeting-instructions')) document.getElementById('meeting-instructions').value = '';
+
+    const radioDefault = document.querySelector('input[name="availability-type"][value="weekly"]');
+    if (radioDefault) {
+        radioDefault.checked = true;
+        gestisciTipoDisponibilitaTour('weekly');
+    }
+    if (document.getElementById('single-fixed-date-input')) {
+        document.getElementById('single-fixed-date-input').value = '';
+    }
     const fileInput = document.getElementById('image-file-input');
     if (fileInput) fileInput.value = '';
     fotoItinerarioCorrenti = [];

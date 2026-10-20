@@ -189,6 +189,7 @@ function renderItinerariGrid(itinerariList, categoria) {
             <div class="card-content">
                 <div class="badges-row">
                     <span class="badge">${escapeHtml(tour.category)}</span>
+                    ${tour.singleFixedDate ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:800;">📌 Evento: ${escapeHtml(tour.singleFixedDate)}</span>` : ''}
                     ${tour.images && tour.images.length > 1 ? `<span class="badge" style="background:#e0f2fe; color:#0369a1;">📷 ${tour.images.length} Foto</span>` : ''}
                     ${String(tour.featured) === 'true' ? '<span class="badge badge-star">⭐ In Evidenza</span>' : ''}
                 </div>

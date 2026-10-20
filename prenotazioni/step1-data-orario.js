@@ -59,9 +59,13 @@ class Step1DataOrario {
         const allDays = [0, 1, 2, 3, 4, 5, 6];
         const closedDays = allDays.filter(d => !availableDays.includes(d));
 
+        const isFixedDate = (this.tourData && (this.tourData.availabilityType === 'singleDate' || this.tourData.singleFixedDate));
+        const singleFixedDate = isFixedDate ? this.tourData.singleFixedDate : null;
+
         // Inizializza il Calendario
         this.calendarInstance = new TourCalendar('step1-calendar-app', {
             closedDays: closedDays,
+            singleFixedDate: singleFixedDate || undefined,
             defaultSlots: customSlots || undefined,
             onDateChange: (isoStr, dateObj) => {
                 this.selectedDateISO = isoStr;

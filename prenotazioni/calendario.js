@@ -13,9 +13,21 @@ class TourCalendar {
 
         this.onDateChange = options.onDateChange || null;
         this.onSlotChange = options.onSlotChange || null;
+        this.singleFixedDate = options.singleFixedDate || null;
 
-        this.currentDate = new Date();
-        this.selectedDate = new Date();
+        if (this.singleFixedDate) {
+            const parts = this.singleFixedDate.split('-');
+            if (parts.length === 3) {
+                this.currentDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                this.selectedDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            } else {
+                this.currentDate = new Date();
+                this.selectedDate = new Date();
+            }
+        } else {
+            this.currentDate = new Date();
+            this.selectedDate = new Date();
+        }
         this.selectedSlot = null;
 
         this.closedDays = options.closedDays || [];
@@ -100,10 +112,17 @@ class TourCalendar {
             const dateObj = new Date(year, month, day);
             dateObj.setHours(0, 0, 0, 0);
 
+            const dateStr = this.formatDateISO(dateObj);
             const dayOfWeek = dateObj.getDay();
-            const isPast = dateObj.getTime() < today.getTime();
-            const isClosed = this.closedDays.includes(dayOfWeek);
-            const isDisabled = isPast || isClosed;
+
+            let isDisabled = false;
+            if (this.singleFixedDate) {
+                isDisabled = (dateStr !== this.singleFixedDate);
+            } else {
+                const isPast = dateObj.getTime() < today.getTime();
+                const isClosed = this.closedDays.includes(dayOfWeek);
+                isDisabled = isPast || isClosed;
+            }
 
             const isToday = dateObj.getTime() === today.getTime();
             const isSelected = this.selectedDate && dateObj.getTime() === this.selectedDate.getTime();
