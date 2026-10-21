@@ -261,10 +261,18 @@ function toggleTuttiGiorni(checked) {
 
 function gestisciTipoDisponibilitaTour(type) {
     const boxDate = document.getElementById('box-single-fixed-date');
+    if (!boxDate) return;
+
     if (type === 'singleDate') {
-        if (boxDate) boxDate.classList.remove('hidden');
+        boxDate.classList.remove('hidden');
+        boxDate.style.display = 'block';
+        const dateInput = document.getElementById('single-fixed-date-input');
+        if (dateInput) {
+            setTimeout(() => dateInput.focus(), 100);
+        }
     } else {
-        if (boxDate) boxDate.classList.add('hidden');
+        boxDate.classList.add('hidden');
+        boxDate.style.display = 'none';
     }
 }
 
