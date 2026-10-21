@@ -372,9 +372,10 @@
                                     { time: '18:00', maxCapacity: 15, booked: 0 }
                                 ];
                             }
+                            const isSharedBus = (tour.sharedBusCapacity === true || tour.sharedBusCapacity === 'true');
                             tour.timeSlots = tour.timeSlots.map(s => {
                                 let slotTimeStr = typeof s === 'string' ? s : s.time;
-                                if (slotTimeStr === targetSlot) {
+                                if (isSharedBus || slotTimeStr === targetSlot) {
                                     if (typeof s === 'string') {
                                         s = { time: slotTimeStr, maxCapacity: 15, booked: totalePasseggeri };
                                     } else {

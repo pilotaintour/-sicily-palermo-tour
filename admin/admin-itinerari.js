@@ -259,6 +259,13 @@ function toggleTuttiGiorni(checked) {
     });
 }
 
+function sincronizzaCheckBus(checked) {
+    const mainCheck = document.getElementById('shared-bus-capacity-main-check');
+    const modalCheck = document.getElementById('shared-bus-capacity-check');
+    if (mainCheck) mainCheck.checked = checked;
+    if (modalCheck) modalCheck.checked = checked;
+}
+
 function gestisciTipoDisponibilitaTour(type) {
     const boxDate = document.getElementById('box-single-fixed-date');
     if (!boxDate) return;
@@ -292,6 +299,9 @@ async function salvaItinerario(event) {
     const availabilityType = availabilityTypeEl ? availabilityTypeEl.value : 'weekly';
     const singleFixedDate = document.getElementById('single-fixed-date-input') ? document.getElementById('single-fixed-date-input').value : '';
 
+    const sharedBusCheck = document.getElementById('shared-bus-capacity-main-check') || document.getElementById('shared-bus-capacity-check');
+    const sharedBusCapacity = sharedBusCheck ? sharedBusCheck.checked : false;
+
     const featured = document.getElementById('featured').value;
     const isConsigliatoEl = document.getElementById('is-consigliato');
     const isAllaModaEl = document.getElementById('is-alla-moda');
@@ -324,14 +334,14 @@ async function salvaItinerario(event) {
     if (id) {
         itinerari = itinerari.map(item => {
             if (String(item.id) === String(id)) {
-                return { id, title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availabilityType, singleFixedDate, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc };
+                return { id, title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availabilityType, singleFixedDate, sharedBusCapacity, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc };
             }
             return item;
         });
     } else {
         const nuovoItinerario = {
             id: Date.now().toString(),
-            title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availabilityType, singleFixedDate, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc
+            title, category, duration, price, meetingPoint, pickupPoints, meetingInstructions, availabilityType, singleFixedDate, sharedBusCapacity, availableDays, timeSlots, maxCapacity, featured, isConsigliato, isAllaModa, imageUrl, images, tappe, servizi, shortDesc, fullDesc
         };
         itinerari.unshift(nuovoItinerario);
     }
@@ -379,6 +389,7 @@ function preparaModifica(id) {
     if (document.getElementById('single-fixed-date-input')) {
         document.getElementById('single-fixed-date-input').value = item.singleFixedDate || '';
     }
+    sincronizzaCheckBus(!!item.sharedBusCapacity);
     document.getElementById('featured').value = item.featured || 'false';
     const isConsigliatoEl = document.getElementById('is-consigliato');
     const isAllaModaEl = document.getElementById('is-alla-moda');
@@ -454,6 +465,7 @@ function resetForm() {
     if (document.getElementById('single-fixed-date-input')) {
         document.getElementById('single-fixed-date-input').value = '';
     }
+    sincronizzaCheckBus(false);
     const fileInput = document.getElementById('image-file-input');
     if (fileInput) fileInput.value = '';
     fotoItinerarioCorrenti = [];
