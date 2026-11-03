@@ -180,10 +180,14 @@ async function salvaFotoHero() {
         return;
     }
     localStorage.setItem('spt_hero_photos', JSON.stringify(fotoHeroCorrenti));
+    if (typeof avviaHeroBgSlider === 'function') {
+        avviaHeroBgSlider();
+    }
     if (window.cloudDB) {
         await window.cloudDB.salvaFotoHeroCloud(fotoHeroCorrenti);
     }
-    alert(`☁️ ${fotoHeroCorrenti.length} foto della copertina pubblicate nel Cloud con successo! Ora qualsiasi utente Ospite o turista vedrà le tue foto aggiornate.`);
+    window.dispatchEvent(new Event('spt_data_updated'));
+    alert(`☁️ ${fotoHeroCorrenti.length} foto della copertina pubblicate nel Cloud con successo! Ora la pagina principale è aggiornata in tempo reale.`);
 }
 
 function toggleSettingBox(boxId) {

@@ -202,6 +202,15 @@ async function saveItinerari(itinerari) {
     const cleanList = pulisciVecchiItinerariDemo(itinerari);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanList));
 
+    if (typeof caricaItinerari === 'function') {
+        const cat = typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti';
+        caricaItinerari(cat);
+    }
+    if (window.consigliatiModaManager) {
+        window.consigliatiModaManager.renderSezioni();
+    }
+    window.dispatchEvent(new Event('spt_data_updated'));
+
     if (window.cloudAdmin && window.cloudAdmin.isAuthorized()) {
         await window.cloudAdmin.salvaItinerariAdmin(cleanList);
     } else if (window.cloudDB) {

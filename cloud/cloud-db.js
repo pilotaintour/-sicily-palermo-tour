@@ -80,7 +80,7 @@ class CloudDatabaseManager {
                 const record = (await res.json()) || {};
 
                 // 1. Sincronizza Itinerari
-                if (record.itinerari && Array.isArray(record.itinerari) && record.itinerari.length > 0) {
+                if (record.itinerari && Array.isArray(record.itinerari)) {
                     const itinerariPuliti = pulisciVecchiItinerariDemo(record.itinerari);
                     localStorage.setItem('spt_itineraries', JSON.stringify(itinerariPuliti));
 
@@ -89,11 +89,14 @@ class CloudDatabaseManager {
                         renderItinerariGrid(itinerariPuliti, cat);
                     }
                     if (typeof caricaElencoItinerari === 'function') caricaElencoItinerari();
+                    if (window.consigliatiModaManager) window.consigliatiModaManager.renderSezioni();
                 }
 
-                // 2. Sincronizza Hero Photos
-                if (record.heroPhotos && Array.isArray(record.heroPhotos) && record.heroPhotos.length > 0) {
+                // 2. Sincronizza Hero Photos (Foto Sfondo Copertina)
+                if (record.heroPhotos && Array.isArray(record.heroPhotos)) {
                     localStorage.setItem('spt_hero_photos', JSON.stringify(record.heroPhotos));
+                    if (typeof avviaHeroBgSlider === 'function') avviaHeroBgSlider();
+                    if (typeof caricaFotoHeroConfig === 'function') caricaFotoHeroConfig();
                 }
 
                 // 3. Sincronizza Prenotazioni (Rispetta lo stato pulito dal Cloud)
@@ -127,9 +130,16 @@ class CloudDatabaseManager {
             if (typeof dataObj.itinerari !== 'undefined') {
                 const cleanItinerari = pulisciVecchiItinerariDemo(dataObj.itinerari);
                 localStorage.setItem('spt_itineraries', JSON.stringify(cleanItinerari));
+                if (typeof renderItinerariGrid === 'function') {
+                    const cat = typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti';
+                    renderItinerariGrid(cleanItinerari, cat);
+                }
+                if (window.consigliatiModaManager) window.consigliatiModaManager.renderSezioni();
             }
             if (typeof dataObj.heroPhotos !== 'undefined') {
                 localStorage.setItem('spt_hero_photos', JSON.stringify(dataObj.heroPhotos));
+                if (typeof avviaHeroBgSlider === 'function') avviaHeroBgSlider();
+                if (typeof caricaFotoHeroConfig === 'function') caricaFotoHeroConfig();
             }
             if (typeof dataObj.bookings !== 'undefined') {
                 localStorage.setItem('spt_bookings', JSON.stringify(dataObj.bookings));
@@ -137,6 +147,9 @@ class CloudDatabaseManager {
             if (typeof dataObj.reviews !== 'undefined') {
                 localStorage.setItem('spt_recensioni', JSON.stringify(dataObj.reviews));
             }
+
+            // Notifica tutti i componenti dell'applicazione dell'avvenuto aggiornamento dati
+            window.dispatchEvent(new Event('spt_data_updated'));
 
             const current = this._getCurrentLocalData();
             const payload = {

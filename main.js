@@ -21,11 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inizializza l'animazione al passaggio scroll del Banner Contattaci
     inizializzaAnimazioneContattaciScroll();
 
-    // Sincronizzazione automatica se l'admin aggiorna gli itinerari in un'altra scheda
+    // Sincronizzazione automatica se l'admin aggiorna gli itinerari o le foto della copertina
     window.addEventListener('storage', (e) => {
         if (e.key === 'spt_itineraries' && typeof caricaItinerari === 'function') {
             caricaItinerari(typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti');
+            if (window.consigliatiModaManager) window.consigliatiModaManager.renderSezioni();
         }
+        if (e.key === 'spt_hero_photos' && typeof avviaHeroBgSlider === 'function') {
+            avviaHeroBgSlider();
+        }
+    });
+
+    window.addEventListener('spt_data_updated', () => {
+        if (typeof caricaItinerari === 'function') {
+            caricaItinerari(typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti');
+        }
+        if (window.consigliatiModaManager) window.consigliatiModaManager.renderSezioni();
+        if (typeof avviaHeroBgSlider === 'function') avviaHeroBgSlider();
+        if (typeof caricaFotoHeroConfig === 'function') caricaFotoHeroConfig();
     });
 });
 
@@ -34,12 +47,17 @@ function avviaHeroBgSlider() {
     const sliderBox = document.getElementById('hero-bg-slider');
     if (!sliderBox) return;
 
+    if (window._heroSliderTimer) {
+        clearInterval(window._heroSliderTimer);
+        window._heroSliderTimer = null;
+    }
+
     let savedPhotos = [];
     try {
         savedPhotos = JSON.parse(localStorage.getItem('spt_hero_photos') || '[]');
     } catch (e) {}
 
-    if (savedPhotos && savedPhotos.length > 0) {
+    if (savedPhotos && Array.isArray(savedPhotos) && savedPhotos.length > 0) {
         sliderBox.innerHTML = savedPhotos.map((url, i) => `
             <div class="hero-slide ${i === 0 ? 'active' : ''}">
                 <img src="${url}" alt="Copertina Tour" style="width:100%; height:100%; object-fit:cover; object-position: center 35%;">
@@ -61,11 +79,11 @@ function avviaHeroBgSlider() {
         `).join('');
     }
 
-    const slides = document.querySelectorAll('.hero-slide');
+    const slides = sliderBox.querySelectorAll('.hero-slide');
     if (!slides || slides.length <= 1) return;
 
     let currentSlide = 0;
-    setInterval(() => {
+    window._heroSliderTimer = setInterval(() => {
         slides[currentSlide].classList.remove('active');
         currentSlide = (currentSlide + 1) % slides.length;
         slides[currentSlide].classList.add('active');
