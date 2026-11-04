@@ -52,32 +52,37 @@ function avviaHeroBgSlider() {
         window._heroSliderTimer = null;
     }
 
+    const defaultPhotos = [
+        'copertina.jpg',
+        'https://images.unsplash.com/photo-1541370976299-4d24ebbc9077?auto=format&fit=crop&w=1920&q=80',
+        'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1920&q=80',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Palermo-Teatro_Massimo_01.jpg/1280px-Palermo-Teatro_Massimo_01.jpg',
+        'https://www.sicilia.info/wp-content/uploads/sites/91/scala-dei-turchi-hd.jpg',
+        'https://www.mooway.it/public/1621965619-vedere-sanvito-1.jpg'
+    ];
+
     let savedPhotos = [];
     try {
         savedPhotos = JSON.parse(localStorage.getItem('spt_hero_photos') || '[]');
     } catch (e) {}
 
-    if (savedPhotos && Array.isArray(savedPhotos) && savedPhotos.length > 0) {
-        sliderBox.innerHTML = savedPhotos.map((url, i) => `
-            <div class="hero-slide ${i === 0 ? 'active' : ''}">
-                <img src="${url}" alt="Copertina Tour" style="width:100%; height:100%; object-fit:cover; object-position: center 35%;">
-            </div>
-        `).join('');
-    } else {
-        const defaultPhotos = [
-            'https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkPa80fb7bWzzi0MNJyxopYrebJqu3gP-LZCKNRZpABdTfSB88N6THhmQb0rt8dxBGARxBqdgpUBfcUhXhoSa2YQ3Ff4VbKIgMG3B4zlJ3t1Z9ca4fx-DpDYsTkt2fD2b4S5Yn9Xw=s1600-w1600-h1200-rw',
-            'https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkMGPV26BT3RCm8a24p-Lq3TQqh0q8vIFFbpm18Qu4aa8cf39Nh_jMCFnWLylGRUhHMb49rFd76ZI845PQ33RXIxBHK8WOQ6ghhCzQct9FViQEnJwbrRgsx36aa3qHueLj67lA95w=s1600-w1600-h1200-rw',
-            'https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkMEu9jf65pXTAwJzsiDkigvj1bC-BmDUox7HtegL_cET6H47xZ50quaBWPE57qGqtwizB4KAfpyfNbWSX8EKpqMnoUfvSUonWELfU7GV7h2bI2zb5lKyOBRRQTDqL0x2_Djk2Qdw=s1600-w1600-h1200-rw',
-            'https://www.sicilia.info/wp-content/uploads/sites/91/scala-dei-turchi-hd.jpg',
-            'https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkd6Df7P4KVpNkdGj0jXxT2XAi45tU9zhkQ4JKIQNatgYnar92eCIShP7geZGsjhrKB8NAsb5NQj6edq3rPBLUrU_ipeSh_ncYcD_svY4uf0qo2nr7toOTiklPFuHnC5gwuxDB_=s1600-w1600-h1200-rw',
-            'https://www.mooway.it/public/1621965619-vedere-sanvito-1.jpg'
-        ];
-        sliderBox.innerHTML = defaultPhotos.map((url, i) => `
-            <div class="hero-slide ${i === 0 ? 'active' : ''}">
-                <img src="${url}" alt="Sicily Palermo Tour Foto ${i + 1}" style="width:100%; height:100%; object-fit:cover; object-position: center 35%;">
-            </div>
-        `).join('');
+    // Rimuove eventuali URL scaduti Google o non validi
+    if (Array.isArray(savedPhotos) && savedPhotos.length > 0) {
+        const cleanSaved = savedPhotos.filter(url => url && !url.includes('googleusercontent.com'));
+        if (cleanSaved.length !== savedPhotos.length) {
+            savedPhotos = cleanSaved;
+            localStorage.setItem('spt_hero_photos', JSON.stringify(savedPhotos));
+            if (window.cloudDB) window.cloudDB.salvaFotoHeroCloud(savedPhotos);
+        }
     }
+
+    const finalPhotos = (Array.isArray(savedPhotos) && savedPhotos.length > 0) ? savedPhotos : defaultPhotos;
+
+    sliderBox.innerHTML = finalPhotos.map((url, i) => `
+        <div class="hero-slide ${i === 0 ? 'active' : ''}">
+            <img src="${url}" alt="Copertina Palermo Tour ${i + 1}" style="width:100%; height:100%; object-fit:cover; object-position: center 35%;">
+        </div>
+    `).join('');
 
     const slides = sliderBox.querySelectorAll('.hero-slide');
     if (!slides || slides.length <= 1) return;
