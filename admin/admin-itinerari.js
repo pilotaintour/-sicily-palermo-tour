@@ -187,15 +187,26 @@ function pulisciVecchiItinerariDemo(lista) {
 // RECUPERO ITINERARI
 function getItinerari() {
     let saved = localStorage.getItem(STORAGE_KEY);
-    let list = null;
+    let list = [];
     if (saved) {
         try {
-            list = JSON.parse(saved);
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) list = pulisciVecchiItinerariDemo(parsed);
         } catch (e) {
             list = [];
         }
     }
-    return (list && Array.isArray(list)) ? pulisciVecchiItinerariDemo(list) : [];
+
+    if (typeof tourCarnevaleMisterbianco !== 'undefined') {
+        const esisteCarnevale = list.some(i => i && String(i.id) === 'tour_carnevale_misterbianco_ikea');
+        if (!esisteCarnevale) {
+            list.unshift(tourCarnevaleMisterbianco);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            if (window.cloudDB) window.cloudDB.salvaItinerariCloud(list);
+        }
+    }
+
+    return list;
 }
 
 async function saveItinerari(itinerari) {
