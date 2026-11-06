@@ -164,58 +164,6 @@ function aggiornaValorePuntoRaccolta(index, val) {
     }
 }
 
-const tourCarnevaleMisterbianco = {
-    id: "tour_carnevale_misterbianco_ikea",
-    title: "🎭🛍️ Carnevale di Misterbianco & IKEA Catania in Bus GT",
-    category: "Trasporti",
-    duration: "1 Giorno",
-    price: "30,00€ a persona",
-    meetingPoint: "Piazzale Giotto (Ore 10:00) • Villabate (Ore 10:20) • Bagheria (Ore 10:40)",
-    pickupPoints: [
-        "Piazzale Giotto (Ore 10:00)",
-        "Villabate (Ore 10:20)",
-        "Bagheria (Ore 10:40)"
-    ],
-    meetingInstructions: "Presentarsi 10 minuti prima della partenza al punto di raccolta scelto. Incontro con il nostro accompagnatore coordinatore Sicily Palermo Tour al Bus GT.",
-    availabilityType: "singleDate",
-    singleFixedDate: "2025-02-07",
-    sharedBusCapacity: true,
-    availableDays: [0, 1, 2, 3, 4, 5, 6],
-    timeSlots: [
-        { time: "10:00", capacity: 55 }
-    ],
-    maxCapacity: 55,
-    featured: "true",
-    isConsigliato: true,
-    isAllaModa: true,
-    imageUrl: "locandina-carnevale-misterbianco.svg",
-    images: [
-        "locandina-carnevale-misterbianco.svg",
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80",
-        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80",
-        "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80"
-    ],
-    tappe: [
-        "Ore 10:00 - Partenza da Piazzale Giotto (Palermo)",
-        "Ore 10:20 - Fermata e prelievo passeggeri a Villabate",
-        "Ore 10:40 - Fermata e prelievo passeggeri a Bagheria",
-        "Mattina - Arrivo all'IKEA di Catania e tempo libero per lo shopping",
-        "Pomeriggio - Trasferimento al famoso Carnevale di Misterbianco tra sfilate e sfarzosi costumi",
-        "Tardo Pomeriggio - Ritrovo dei partecipanti e partenza per il rientro a Palermo"
-    ],
-    servizi: [
-        "Trasporto / Transfer Incluso",
-        "Accompagnatore Turistico / Leader",
-        "Assicurazione Tour Inclusa",
-        "Assistenza Dedicata WhatsApp",
-        "Cancellazione Gratuita",
-        "Adatto a Famiglie & Bambini",
-        "Camminata Facile Pianeggiante"
-    ],
-    shortDesc: "Vivi una giornata spettacolare in Bus GT tra lo shopping all'IKEA di Catania ed il famoso e variopinto Carnevale di Misterbianco!",
-    fullDesc: "Raduno dei partecipanti nei punti di raccolta prestabiliti, incontro con il nostro coordinatore Sicily Palermo Tour e partenza in Bus GT, pronti a trascorrere insieme una piacevole giornata all’insegna dello shopping e del divertimento.\n\nLa nostra prima tappa sarà l’IKEA di Catania, dove avremo del tempo libero da dedicare allo shopping, curiosando tra arredamento, accessori per la casa, decorazioni e tantissime idee originali! Un’occasione perfetta per fare acquisti, trovare nuove inspirazioni e concedersi una piacevole pausa in compagnia.\n\nNel pomeriggio ci sposteremo a Misterbianco per immergerci nella straordinaria atmosfera del suo famoso Carnevale, uno degli appuntamenti più caratteristici e spettacolari della Sicilia! Tra splendidi costumi, maschere coloratissime, musica, allegria e tradizioni, potremo vivere da vicino tutta la magia di questa meravigliosa festa!\n\nAvremo del tempo libero per passeggiare, ammirare i costumi e le attrazioni carnevalesche, scattare tante fotografie e goderci l’atmosfera di festa!\n\nAl termine della giornata, ritrovo dei partecipanti e partenza per il viaggio di rientro verso i luoghi di origine, portando a casa tanti bei ricordi!"
-};
-
 const DEFAULT_ITINERARIES = [];
 
 function pulisciVecchiItinerariDemo(lista) {
@@ -248,15 +196,8 @@ function getItinerari() {
             list = [];
         }
     }
-
-    if (typeof tourCarnevaleMisterbianco !== 'undefined') {
-        const esisteCarnevale = list.some(i => i && String(i.id) === 'tour_carnevale_misterbianco_ikea');
-        if (!esisteCarnevale) {
-            list.unshift(tourCarnevaleMisterbianco);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-            if (window.cloudDB) window.cloudDB.salvaItinerariCloud(list);
-        }
-    }
+    return list;
+}
 
     return list;
 }
