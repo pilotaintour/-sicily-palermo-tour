@@ -21,10 +21,7 @@ let fotoItinerarioCorrenti = [];
 let tappeCorrenti = ['Incontro con la guida', 'Passeggiata tra i monumenti storici'];
 let puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
 let orariCorrenti = [
-    { time: '09:30', capacity: 15 },
-    { time: '11:30', capacity: 15 },
-    { time: '15:30', capacity: 15 },
-    { time: '18:00', capacity: 15 }
+    { time: '10:00', capacity: 53 }
 ];
 
 const PALERMO_AUTOCOMPLETE_PLACES = [
@@ -448,10 +445,7 @@ function preparaModifica(id) {
         orariCorrenti = [...item.timeSlots];
     } else {
         orariCorrenti = [
-            { time: '09:30', capacity: 15 },
-            { time: '11:30', capacity: 15 },
-            { time: '15:30', capacity: 15 },
-            { time: '18:00', capacity: 15 }
+            { time: '10:00', capacity: 53 }
         ];
     }
     renderCampiOrari();
@@ -509,10 +503,7 @@ function resetForm() {
     fotoItinerarioCorrenti = [];
     tappeCorrenti = ['Incontro con la guida', 'Passeggiata tra i monumenti'];
     orariCorrenti = [
-        { time: '09:30', capacity: 15 },
-        { time: '11:30', capacity: 15 },
-        { time: '15:30', capacity: 15 },
-        { time: '18:00', capacity: 15 }
+        { time: '10:00', capacity: 53 }
     ];
     document.querySelectorAll('input[name="giorno-check"]').forEach(c => c.checked = true);
     const checkAll = document.getElementById('check-all-days');
@@ -663,7 +654,7 @@ function renderCampiOrari() {
 
 function toggleOrario(timeStr) {
     const inputCap = document.getElementById('capienza-selezione-input');
-    const targetCapacity = inputCap ? (parseInt(inputCap.value, 10) || 15) : 15;
+    const targetCapacity = inputCap ? (parseInt(inputCap.value, 10) || 53) : 53;
 
     const idx = orariCorrenti.findIndex(o => o.time === timeStr);
 
@@ -683,7 +674,7 @@ function toggleOrario(timeStr) {
 
 function aggiornaCapienzaOrario(index, nuovaCapienza) {
     if (orariCorrenti[index]) {
-        orariCorrenti[index].capacity = parseInt(nuovaCapienza, 10) || 15;
+        orariCorrenti[index].capacity = parseInt(nuovaCapienza, 10) || 53;
         renderCampiOrari();
     }
 }

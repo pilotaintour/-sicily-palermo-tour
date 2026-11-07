@@ -35,7 +35,8 @@ class AdminSmartParser {
         try {
             const parsed = this.parseText(rawText);
             this.applicaCampiForm(parsed);
-            alert(`✨ Modulo auto-compilato con successo!\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\nVerifica i campi e carica la locandina prima di salvare.`);
+            const orariStr = parsed.timeSlots.map(s => `${s.time} (53p)`).join(', ');
+            alert(`✨ Modulo auto-compilato con successo!\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\n⏰ Estratti ${parsed.timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi e carica la locandina prima di salvare.`);
         } catch (err) {
             console.error('Errore durante l\'auto-compilazione:', err);
             alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
@@ -108,6 +109,38 @@ class AdminSmartParser {
             pickupPoints.push('Piazzale Giotto (Ore 10:00)', 'Villabate (Ore 10:20)', 'Bagheria (Ore 10:40)');
         }
 
+        // 5b. Estrazione Orari Dinamici nel testo (con capienza predefinita di 53 posti)
+        const extractedTimeSlots = [];
+        const seenTimes = new Set();
+
+        const hhmmRegex = /\b([0-1]?[0-9]|2[0-3])[:\.](([0-5][0-9]))\b(?!\s*(?:€|euro|eur|\$|%|[\.-]\d{2,4}))/gi;
+        let timeMatch;
+        while ((timeMatch = hhmmRegex.exec(fullText)) !== null) {
+            const hh = String(timeMatch[1]).padStart(2, '0');
+            const mm = timeMatch[2];
+            const timeStr = `${hh}:${mm}`;
+            if (!seenTimes.has(timeStr)) {
+                seenTimes.add(timeStr);
+                extractedTimeSlots.push({ time: timeStr, capacity: 53 });
+            }
+        }
+
+        const oreRegex = /\bore\s*([0-1]?[0-9]|2[0-3])(?!\s*[:\.]\s*\d)\b/gi;
+        while ((timeMatch = oreRegex.exec(fullText)) !== null) {
+            const hh = String(timeMatch[1]).padStart(2, '0');
+            const timeStr = `${hh}:00`;
+            if (!seenTimes.has(timeStr)) {
+                seenTimes.add(timeStr);
+                extractedTimeSlots.push({ time: timeStr, capacity: 53 });
+            }
+        }
+
+        extractedTimeSlots.sort((a, b) => a.time.localeCompare(b.time));
+
+        if (extractedTimeSlots.length === 0) {
+            extractedTimeSlots.push({ time: '10:00', capacity: 53 });
+        }
+
         // 6. Estrazione Programma e Tappe
         const tappe = [];
         let inProgramma = false;
@@ -144,6 +177,7 @@ class AdminSmartParser {
             availabilityType,
             singleFixedDate,
             pickupPoints,
+            timeSlots: extractedTimeSlots,
             tappe,
             shortDesc,
             fullDesc
@@ -212,6 +246,28 @@ class AdminSmartParser {
             }
             if (typeof renderCampiTappe === 'function') {
                 renderCampiTappe();
+            }
+        }
+
+        // Capienza Bus Condivisa (Attiva per default per Bus da 53 posti)
+        const busCheckMain = document.getElementById('shared-bus-capacity-main-check');
+        const busCheckModal = document.getElementById('shared-bus-capacity-check');
+        if (busCheckMain) busCheckMain.checked = true;
+        if (busCheckModal) busCheckModal.checked = true;
+        if (typeof sincronizzaCheckBus === 'function') {
+            sincronizzaCheckBus(true);
+        }
+
+        // Capienza fissa 53 posti per TUTTI gli orari estratti dal testo
+        if (typeof orariCorrenti !== 'undefined') {
+            orariCorrenti.length = 0;
+            if (data.timeSlots && data.timeSlots.length > 0) {
+                data.timeSlots.forEach(slot => orariCorrenti.push({ time: slot.time, capacity: slot.capacity || 53 }));
+            } else {
+                orariCorrenti.push({ time: '10:00', capacity: 53 });
+            }
+            if (typeof renderCampiOrari === 'function') {
+                renderCampiOrari();
             }
         }
 
