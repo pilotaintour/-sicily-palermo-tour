@@ -82,6 +82,9 @@ function verificaStatoAutenticazione() {
             welcomeMsg.textContent = `👤 Admin: ${AUTHORIZED_EMAIL_MAIN}`;
         }
 
+        if (typeof renderCampiPuntiRaccolta === 'function') renderCampiPuntiRaccolta();
+        if (typeof renderCampiTappe === 'function') renderCampiTappe();
+        if (typeof renderCampiOrari === 'function') renderCampiOrari();
         if (typeof caricaElencoItinerari === 'function') caricaElencoItinerari();
         if (typeof caricaPrenotazioniAdmin === 'function') caricaPrenotazioniAdmin();
         if (typeof caricaSezioneTransazioni === 'function') caricaSezioneTransazioni();

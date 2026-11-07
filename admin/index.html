@@ -141,7 +141,21 @@
                                 <p style="font-size: 0.83rem; color: #0284c7; margin-bottom: 12px;">Inserisci uno o più punti di ritrovo o raccolta per questo tour (es. Piazzale Giotto, Piazza Politeama, Cattedrale, Porto, ecc.).</p>
 
                                 <div id="punti-raccolta-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
-                                    <!-- Popolato via JS con input + pulsante elimina -->
+                                    <div style="position: relative; display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 800; color: #0369a1; font-size: 0.95rem; min-width: 24px; text-align: right;">1.</span>
+                                        <div style="flex: 1; position: relative;">
+                                            <input type="text" id="punto-raccolta-input-0" value="Piazzale Giotto" onfocus="gestisciAutocompletePuntoRaccolta(0, this.value, true)" oninput="aggiornaValorePuntoRaccolta(0, this.value); gestisciAutocompletePuntoRaccolta(0, this.value)" placeholder="Scrivi o cerca luogo/indirizzo (es. Giotto, Politeama, Cattedrale...)" autocomplete="off" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; background: #ffffff;">
+                                            <div id="punto-raccolta-suggestions-0" class="autocomplete-dropdown hidden"></div>
+                                        </div>
+                                    </div>
+                                    <div style="position: relative; display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 800; color: #0369a1; font-size: 0.95rem; min-width: 24px; text-align: right;">2.</span>
+                                        <div style="flex: 1; position: relative;">
+                                            <input type="text" id="punto-raccolta-input-1" value="Piazza Politeama" onfocus="gestisciAutocompletePuntoRaccolta(1, this.value, true)" oninput="aggiornaValorePuntoRaccolta(1, this.value); gestisciAutocompletePuntoRaccolta(1, this.value)" placeholder="Scrivi o cerca luogo/indirizzo (es. Giotto, Politeama, Cattedrale...)" autocomplete="off" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; background: #ffffff;">
+                                            <div id="punto-raccolta-suggestions-1" class="autocomplete-dropdown hidden"></div>
+                                        </div>
+                                        <button type="button" class="btn-danger btn-small" onclick="rimuoviCampoPuntoRaccolta(1)" title="Elimina punto" style="padding: 8px 12px;">🗑️</button>
+                                    </div>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
@@ -680,6 +694,6 @@
     <script src="admin-transazioni.js?v=3"></script>
     <script src="admin-impostazioni.js?v=3"></script>
     <script src="admin-recensioni.js?v=3"></script>
-    <script src="admin.js?v=3"></script>
+    <script src="admin.js?v=20"></script>
 </body>
 </html>
