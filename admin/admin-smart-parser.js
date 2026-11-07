@@ -26,6 +26,72 @@ class AdminSmartParser {
         }
     }
 
+    extractDatesFromText(text) {
+        const foundDates = [];
+        const seenISO = new Set();
+        const currentYear = new Date().getFullYear();
+
+        // 1. Day + Month (es: "7 Febbraio 2025", "07 Feb", "7th February")
+        const dayMonthRegex = /\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:di\s+)?([a-zà-ú]{3,10})(?:\s+(\d{4}))?\b/gi;
+        let match;
+        while ((match = dayMonthRegex.exec(text)) !== null) {
+            const dayNum = parseInt(match[1], 10);
+            const monthStr = match[2].toLowerCase();
+            let year = match[3] || currentYear;
+            if (String(year).length === 2) year = '20' + year;
+
+            const monthNum = this.monthMap[monthStr];
+            if (dayNum >= 1 && dayNum <= 31 && monthNum) {
+                const dayPadded = String(dayNum).padStart(2, '0');
+                const iso = `${year}-${monthNum}-${dayPadded}`;
+                if (!seenISO.has(iso)) {
+                    seenISO.add(iso);
+                    foundDates.push({ iso, day: dayNum, month: monthNum, year: String(year), raw: match[0] });
+                }
+            }
+        }
+
+        // 2. Month + Day (es: "February 7", "Feb 7", "February 7 2025")
+        const monthDayRegex = /\b([a-zà-ú]{3,10})\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(\d{4}))?\b/gi;
+        while ((match = monthDayRegex.exec(text)) !== null) {
+            const monthStr = match[1].toLowerCase();
+            const dayNum = parseInt(match[2], 10);
+            let year = match[3] || currentYear;
+            if (String(year).length === 2) year = '20' + year;
+
+            const monthNum = this.monthMap[monthStr];
+            if (dayNum >= 1 && dayNum <= 31 && monthNum) {
+                const dayPadded = String(dayNum).padStart(2, '0');
+                const iso = `${year}-${monthNum}-${dayPadded}`;
+                if (!seenISO.has(iso)) {
+                    seenISO.add(iso);
+                    foundDates.push({ iso, day: dayNum, month: monthNum, year: String(year), raw: match[0] });
+                }
+            }
+        }
+
+        // 3. Numeric Date (es: "07/02/2025", "7/2/25", "07-02-2025", "07.02.2025")
+        const numDateRegex = /\b(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?\b/g;
+        while ((match = numDateRegex.exec(text)) !== null) {
+            const dayNum = parseInt(match[1], 10);
+            const monthNum = String(parseInt(match[2], 10)).padStart(2, '0');
+            let year = match[3] || currentYear;
+            if (String(year).length === 2) year = '20' + year;
+
+            if (dayNum >= 1 && dayNum <= 31 && parseInt(monthNum, 10) >= 1 && parseInt(monthNum, 10) <= 12) {
+                const dayPadded = String(dayNum).padStart(2, '0');
+                const iso = `${year}-${monthNum}-${dayPadded}`;
+                if (!seenISO.has(iso)) {
+                    seenISO.add(iso);
+                    foundDates.push({ iso, day: dayNum, month: monthNum, year: String(year), raw: match[0] });
+                }
+            }
+        }
+
+        foundDates.sort((a, b) => a.iso.localeCompare(b.iso));
+        return foundDates;
+    }
+
     autoCompilaForm() {
         const textarea = document.getElementById('smart-parser-input');
         if (!textarea) return;
@@ -40,7 +106,19 @@ class AdminSmartParser {
             const parsed = this.parseText(rawText);
             this.applicaCampiForm(parsed);
             const orariStr = parsed.timeSlots.map(s => `${s.time} (53p)`).join(', ');
-            alert(`✨ Modulo auto-compilato con successo!\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\n⏰ Estratti ${parsed.timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi e carica la locandina prima di salvare.`);
+
+            let dateMsg = '';
+            if (parsed.extractedDates && parsed.extractedDates.length > 1) {
+                const dateListStr = parsed.extractedDates.map(d => `${String(d.day).padStart(2, '0')}/${d.month}/${d.year}`).join(', ');
+                dateMsg = `📅 Estratte ${parsed.extractedDates.length} DATE FISSE:\n- ${dateListStr}\n(Impostata data principale: ${parsed.extractedDates[0].day}/${parsed.extractedDates[0].month}/${parsed.extractedDates[0].year})`;
+            } else if (parsed.extractedDates && parsed.extractedDates.length === 1) {
+                const d = parsed.extractedDates[0];
+                dateMsg = `📅 Estratta DATA FISSA:\n- ${String(d.day).padStart(2, '0')}/${d.month}/${d.year}`;
+            } else {
+                dateMsg = `🗓️ Nessuna data specifica trovata nel testo (Disponibilità settimanale)`;
+            }
+
+            alert(`✨ Modulo auto-compilato con successo!\n\n${dateMsg}\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\n⏰ Estratti ${parsed.timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi e carica la locandina prima di salvare.`);
         } catch (err) {
             console.error('Errore durante l\'auto-compilazione:', err);
             alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
@@ -79,39 +157,24 @@ class AdminSmartParser {
             category = 'Esperienze e Tradizioni';
         }
 
-        // 4. Estrazione Data Fissa Evento
+        // 4. Estrazione Data o Date Fisse Evento
+        const extractedDates = this.extractDatesFromText(fullText);
         let singleFixedDate = '';
         let availabilityType = 'weekly';
-        const dateMatch = fullText.match(/(\d{1,2})\s+([a-zà-ú]{3,10})(?:\s+(\d{4}))?/i) ||
-                          fullText.match(/([a-zà-ú]{3,10})\s+(\d{1,2})(?:[st|nd|rd|th]*)?(?:\s*,?\s*(\d{4}))?/i) ||
-                          fullText.match(/(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?/);
-        if (dateMatch) {
-            let dayNum = 0;
-            let monthStr = '';
-            let year = new Date().getFullYear();
+        const activeWeekDays = [];
 
-            if (dateMatch[1] && /^\d+$/.test(dateMatch[1]) && dateMatch[2] && isNaN(dateMatch[2])) {
-                dayNum = parseInt(dateMatch[1], 10);
-                monthStr = dateMatch[2].toLowerCase();
-                if (dateMatch[3]) year = dateMatch[3];
-            } else if (dateMatch[1] && isNaN(dateMatch[1]) && dateMatch[2] && /^\d+$/.test(dateMatch[2])) {
-                monthStr = dateMatch[1].toLowerCase();
-                dayNum = parseInt(dateMatch[2], 10);
-                if (dateMatch[3]) year = dateMatch[3];
-            } else if (dateMatch[1] && dateMatch[2]) {
-                dayNum = parseInt(dateMatch[1], 10);
-                monthStr = dateMatch[2];
-                if (dateMatch[3]) year = dateMatch[3];
-            }
+        if (extractedDates.length > 0) {
+            availabilityType = 'singleDate';
+            singleFixedDate = extractedDates[0].iso;
 
-            let monthNum = this.monthMap[monthStr] || (monthStr ? monthStr.padStart(2, '0') : '');
-            if (String(year).length === 2) year = '20' + year;
-
-            if (dayNum > 0 && dayNum <= 31 && monthNum) {
-                const dayPadded = String(dayNum).padStart(2, '0');
-                singleFixedDate = `${year}-${monthNum}-${dayPadded}`;
-                availabilityType = 'singleDate';
-            }
+            extractedDates.forEach(d => {
+                const parts = d.iso.split('-');
+                const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                const dayOfWeek = dt.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+                if (!activeWeekDays.includes(dayOfWeek)) {
+                    activeWeekDays.push(dayOfWeek);
+                }
+            });
         }
 
         // 5. Estrazione Punti di Raccolta e Orari
@@ -197,6 +260,8 @@ class AdminSmartParser {
             category,
             availabilityType,
             singleFixedDate,
+            extractedDates,
+            activeWeekDays,
             pickupPoints,
             timeSlots: extractedTimeSlots,
             tappe,
@@ -244,6 +309,25 @@ class AdminSmartParser {
             }
             const dateInput = document.getElementById('single-fixed-date-input');
             if (dateInput) dateInput.value = data.singleFixedDate;
+        } else {
+            const radioWeekly = document.querySelector('input[name="availability-type"][value="weekly"]');
+            if (radioWeekly) {
+                radioWeekly.checked = true;
+                if (typeof gestisciTipoDisponibilitaTour === 'function') {
+                    gestisciTipoDisponibilitaTour('weekly');
+                }
+            }
+        }
+
+        // Seleziona i giorni della settimana attivi per le date estratte
+        if (data.activeWeekDays && data.activeWeekDays.length > 0) {
+            document.querySelectorAll('input[name="giorno-check"]').forEach(c => {
+                c.checked = data.activeWeekDays.includes(parseInt(c.value, 10));
+            });
+            const checkAll = document.getElementById('check-all-days');
+            if (checkAll) {
+                checkAll.checked = (data.activeWeekDays.length === 7);
+            }
         }
 
         // Punti di Raccolta Dinamici (FORZATI SULL'ARRAY GLOBALE ED AGGIORNAMENTO RENDERING)
