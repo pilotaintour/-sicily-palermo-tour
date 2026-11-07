@@ -193,18 +193,16 @@ class AdminSmartParser {
         }
 
         // Punti di Raccolta Dinamici
-        const pickupContainer = document.getElementById('punti-raccolta-container');
-        if (pickupContainer) {
-            pickupContainer.innerHTML = '';
-            if (typeof puntiRaccoltaCorrenti !== 'undefined') {
-                puntiRaccoltaCorrenti.length = 0;
+        if (typeof puntiRaccoltaCorrenti !== 'undefined') {
+            puntiRaccoltaCorrenti.length = 0;
+            if (data.pickupPoints && data.pickupPoints.length > 0) {
+                data.pickupPoints.forEach(pt => puntiRaccoltaCorrenti.push(pt));
+            } else {
+                puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 10:00)');
             }
-
-            data.pickupPoints.forEach((point, idx) => {
-                if (typeof aggiungiCampoPuntoRaccolta === 'function') {
-                    aggiungiCampoPuntoRaccolta(point);
-                }
-            });
+            if (typeof renderCampiPuntiRaccolta === 'function') {
+                renderCampiPuntiRaccolta();
+            }
         }
 
         // Tappe
