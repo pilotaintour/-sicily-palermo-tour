@@ -7,6 +7,16 @@ const STORAGE_KEY = 'spt_itineraries';
 const AUTH_KEY = 'spt_admin_logged_in';
 const AUTHORIZED_EMAIL = 'pilotaintour13@gmail.com';
 
+function escapeHtmlAdmin(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 let fotoItinerarioCorrenti = [];
 let tappeCorrenti = ['Incontro con la guida', 'Passeggiata tra i monumenti storici'];
 let puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
@@ -39,27 +49,30 @@ function renderCampiPuntiRaccolta() {
     const container = document.getElementById('punti-raccolta-container');
     if (!container) return;
 
-    if (!puntiRaccoltaCorrenti || puntiRaccoltaCorrenti.length === 0) {
+    if (!Array.isArray(puntiRaccoltaCorrenti) || puntiRaccoltaCorrenti.length === 0) {
         puntiRaccoltaCorrenti = ['Piazzale Giotto'];
     }
 
-    container.innerHTML = puntiRaccoltaCorrenti.map((punto, index) => `
+    container.innerHTML = puntiRaccoltaCorrenti.map((punto, index) => {
+        const valAttr = String(punto || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return `
         <div style="position: relative; display: flex; align-items: center; gap: 8px;">
             <span style="font-weight: 800; color: #0369a1; font-size: 0.95rem; min-width: 24px; text-align: right;">${index + 1}.</span>
             <div style="flex: 1; position: relative;">
                 <input type="text"
                        id="punto-raccolta-input-${index}"
-                       value="${escapeHtmlAdmin(punto)}"
+                       value="${valAttr}"
                        onfocus="gestisciAutocompletePuntoRaccolta(${index}, this.value, true)"
                        oninput="aggiornaValorePuntoRaccolta(${index}, this.value); gestisciAutocompletePuntoRaccolta(${index}, this.value)"
                        placeholder="Scrivi o cerca luogo/indirizzo (es. Giotto, Politeama, Cattedrale...)"
                        autocomplete="off"
-                       style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;">
+                       style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; background: #ffffff;">
                 <div id="punto-raccolta-suggestions-${index}" class="autocomplete-dropdown hidden"></div>
             </div>
             ${puntiRaccoltaCorrenti.length > 1 ? `<button type="button" class="btn-danger btn-small" onclick="rimuoviCampoPuntoRaccolta(${index})" title="Elimina punto" style="padding: 8px 12px;">🗑️</button>` : ''}
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function gestisciAutocompletePuntoRaccolta(index, query, isFocus = false) {
