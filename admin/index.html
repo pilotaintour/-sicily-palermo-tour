@@ -69,6 +69,28 @@
                         <form id="itineraryForm" onsubmit="salvaItinerario(event)">
                             <input type="hidden" id="itinerary-id">
 
+                            <!-- Box Auto-compilatore Intelligente (Modulo Separato admin-smart-parser.js) -->
+                            <div id="smart-parser-box" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 16px; border-radius: 12px; border: 1.5px solid #0284c7; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                    <label style="color: #0369a1; font-weight: 800; font-size: 0.98rem; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                        ✨ Auto-compilatore Intelligente da Post WhatsApp / Social
+                                    </label>
+                                    <button type="button" onclick="adminSmartParser.toggleParserBox()" class="btn-secondary btn-small" style="background: #0284c7; font-weight: 700;">
+                                        ▼ Apri / Chiudi Parser
+                                    </button>
+                                </div>
+                                <p style="font-size: 0.82rem; color: #0369a1; margin-top: 6px; margin-bottom: 10px;">Incolla qui sotto il testo grezzo del post o del messaggio WhatsApp per compilare automaticamente tutti i campi del modulo:</p>
+
+                                <div id="parser-input-container" class="hidden" style="margin-top: 10px;">
+                                    <textarea id="smart-parser-input" rows="4" placeholder="Incolla qui il testo del post (es. CARNEVALE DI MISTERBIANCO, Piazzale Giotto ore 10:00, Villabate ore 10:20...)" style="width: 100%; padding: 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.88rem; background: #ffffff; margin-bottom: 10px;"></textarea>
+                                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                        <button type="button" onclick="adminSmartParser.autoCompilaForm()" class="btn-primary" style="background: #0284c7; font-weight: 700; padding: 8px 18px;">
+                                            ⚡ Auto-compila Modulo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label for="title">Titolo dell'Itinerario *</label>
                                 <input type="text" id="title" required placeholder="Es. Tour dei Mercati Storici">
@@ -651,6 +673,7 @@
     <script src="../cloud/cloud-admin.js?v=3"></script>
     <script src="../email/email-service.js?v=3"></script>
     <script src="../email/emailedit.js?v=3"></script>
+    <script src="admin-smart-parser.js?v=1"></script>
     <script src="admin-itinerari.js?v=3"></script>
     <script src="admin-archivio.js?v=3"></script>
     <script src="admin-prenotazioni.js?v=3"></script>
