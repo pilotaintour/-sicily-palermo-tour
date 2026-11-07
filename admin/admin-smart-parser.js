@@ -35,7 +35,7 @@ class AdminSmartParser {
         try {
             const parsed = this.parseText(rawText);
             this.applicaCampiForm(parsed);
-            alert('✨ Modulo auto-compilato con successo! Verifica i campi e carica la locandina prima di salvare.');
+            alert(`✨ Modulo auto-compilato con successo!\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\nVerifica i campi e carica la locandina prima di salvare.`);
         } catch (err) {
             console.error('Errore durante l\'auto-compilazione:', err);
             alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
@@ -46,10 +46,10 @@ class AdminSmartParser {
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
         const fullText = text;
 
-        // 1. Estrazione Titolo (Prima riga non vuota con testo significativo)
+        // 1. Estrazione Titolo
         let title = lines[0] || 'Nuovo Tour in Bus';
-        // Rimuove eventuali emoji decorative o simboli iniziali ma mantiene leggibilità
-        title = title.replace(/^[^\w\s\u00C0-\u024F\u1E00-\u1EFF]+/g, '').trim();
+        title = title.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').replace(/^[^\w\s\u00C0-\u024F\u1E00-\u1EFF]+/g, '').trim();
+        if (!title) title = 'Carnevale di Misterbianco & IKEA Catania';
 
         // 2. Estrazione Prezzo
         let price = '30,00€ a persona';
@@ -62,31 +62,28 @@ class AdminSmartParser {
         // 3. Estrazione Categoria
         let category = 'Trasporti';
         const lowerText = fullText.toLowerCase();
-        if (lowerText.includes('food') || lowerText.includes('degustaz') || lowerText.includes('mangiare') || lowerText.includes('street')) {
+        if (lowerText.includes('food') || lowerText.includes('degustaz') || lowerText.includes('street')) {
             category = 'Street Food';
-        } else if (lowerText.includes('mare') || lowerText.includes('spiaggia') || lowerText.includes('barca') || lowerText.includes('natura')) {
+        } else if (lowerText.includes('mare') || lowerText.includes('spiaggia') || lowerText.includes('natura')) {
             category = 'Mare e Natura';
-        } else if (lowerText.includes('storia') || lowerText.includes('monument') || lowerText.includes('chiesa') || lowerText.includes('museo')) {
+        } else if (lowerText.includes('storia') || lowerText.includes('monument') || lowerText.includes('museo')) {
             category = 'Storia e Cultura';
-        } else if (lowerText.includes('bus') || lowerText.includes('transfer') || lowerText.includes('partenze') || lowerText.includes('carnevale')) {
+        } else if (lowerText.includes('bus') || lowerText.includes('partenz') || lowerText.includes('carnevale')) {
             category = 'Trasporti';
         } else {
             category = 'Esperienze e Tradizioni';
         }
 
-        // 4. Estrazione Data Fissa
+        // 4. Estrazione Data Fissa Evento
         let singleFixedDate = '';
         let availabilityType = 'weekly';
-
-        // Cerca pattern tipo: 7 febbraio, Domenica 7 febbraio, 07/02/2025, 07-02
         const dateMatch = fullText.match(/(\d{1,2})\s+([a-zà-ú]{3,10})(?:\s+(\d{4}))?/i) || fullText.match(/(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?/);
         if (dateMatch) {
             const dayNum = parseInt(dateMatch[1], 10);
             let monthStr = dateMatch[2] ? dateMatch[2].toLowerCase() : '';
             let monthNum = this.monthMap[monthStr] || (dateMatch[2] ? dateMatch[2].padStart(2, '0') : '');
-
             let year = dateMatch[3] || new Date().getFullYear();
-            if (year.length === 2) year = '20' + year;
+            if (String(year).length === 2) year = '20' + year;
 
             if (dayNum > 0 && dayNum <= 31 && monthNum) {
                 const dayPadded = String(dayNum).padStart(2, '0');
@@ -99,9 +96,9 @@ class AdminSmartParser {
         const pickupPoints = [];
         lines.forEach(line => {
             if (/partenz|raccolta|fermat|giotto|villabate|bagheria|piazza|piazzale|ore\s*\d+/i.test(line)) {
-                // Pulisce il prefisso emoji o spunte
-                const cleanLine = line.replace(/^[👉📍✅🚌•\s\*-]+/g, '').trim();
-                if (cleanLine && cleanLine.length > 3 && !cleanLine.toLowerCase().startsWith('partenze:')) {
+                let cleanLine = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, '').trim();
+                cleanLine = cleanLine.replace(/^[:\s\*-]+/g, '').trim();
+                if (cleanLine && cleanLine.length > 3 && !cleanLine.toLowerCase().startsWith('partenze')) {
                     pickupPoints.push(cleanLine);
                 }
             }
@@ -120,8 +117,9 @@ class AdminSmartParser {
                 return;
             }
             if (inProgramma) {
-                if (line.length > 10 && !line.includes('€') && !line.includes('393')) {
-                    tappe.push(line);
+                let cleanTappa = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                if (cleanTappa.length > 10 && !cleanTappa.includes('€') && !cleanTappa.includes('393')) {
+                    tappe.push(cleanTappa);
                 }
             }
         });
@@ -129,7 +127,8 @@ class AdminSmartParser {
         if (tappe.length === 0) {
             tappe.push(
                 'Incontro nei punti di raccolta e partenza in Bus GT',
-                'Arrivo a destinazione e tempo libero per le attività previste dal programma',
+                'Sosta all’IKEA di Catania e tempo libero per lo shopping',
+                'Pomeriggio al famoso Carnevale di Misterbianco tra sfilate e maschere',
                 'Ritrovo dei partecipanti e partenza per il viaggio di rientro'
             );
         }
@@ -179,7 +178,7 @@ class AdminSmartParser {
         const isAllaModaEl = document.getElementById('is-alla-moda');
         if (isAllaModaEl) isAllaModaEl.checked = true;
 
-        // Disponibilità e Data Fissa
+        // Disponibilità e Data Fissa Evento
         if (data.availabilityType === 'singleDate' && data.singleFixedDate) {
             const radioSingle = document.querySelector('input[name="availability-type"][value="singleDate"]');
             if (radioSingle) {
@@ -192,13 +191,13 @@ class AdminSmartParser {
             if (dateInput) dateInput.value = data.singleFixedDate;
         }
 
-        // Punti di Raccolta Dinamici
+        // Punti di Raccolta Dinamici (FORZATI SULL'ARRAY GLOBALE ED AGGIORNAMENTO RENDERING)
         if (typeof puntiRaccoltaCorrenti !== 'undefined') {
             puntiRaccoltaCorrenti.length = 0;
             if (data.pickupPoints && data.pickupPoints.length > 0) {
                 data.pickupPoints.forEach(pt => puntiRaccoltaCorrenti.push(pt));
             } else {
-                puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 10:00)');
+                puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 10:00)', 'Villabate (Ore 10:20)', 'Bagheria (Ore 10:40)');
             }
             if (typeof renderCampiPuntiRaccolta === 'function') {
                 renderCampiPuntiRaccolta();
@@ -208,7 +207,9 @@ class AdminSmartParser {
         // Tappe
         if (typeof tappeCorrenti !== 'undefined') {
             tappeCorrenti.length = 0;
-            data.tappe.forEach(t => tappeCorrenti.push(t));
+            if (data.tappe && data.tappe.length > 0) {
+                data.tappe.forEach(t => tappeCorrenti.push(t));
+            }
             if (typeof renderCampiTappe === 'function') {
                 renderCampiTappe();
             }
