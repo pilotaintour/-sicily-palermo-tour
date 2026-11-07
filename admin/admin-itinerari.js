@@ -225,9 +225,6 @@ function getItinerari() {
     return list;
 }
 
-    return list;
-}
-
 async function saveItinerari(itinerari) {
     const cleanList = pulisciVecchiItinerariDemo(itinerari);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanList));
