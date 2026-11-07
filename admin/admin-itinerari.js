@@ -157,25 +157,38 @@ document.addEventListener('click', (event) => {
 });
 
 function aggiungiCampoPuntoRaccolta() {
+    if (!Array.isArray(puntiRaccoltaCorrenti)) {
+        puntiRaccoltaCorrenti = ['Piazzale Giotto'];
+    }
     puntiRaccoltaCorrenti.push('');
     renderCampiPuntiRaccolta();
-    const inputs = document.querySelectorAll('#punti-raccolta-container input');
-    if (inputs.length > 0) {
-        inputs[inputs.length - 1].focus();
-    }
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('#punti-raccolta-container input');
+        if (inputs.length > 0) {
+            inputs[inputs.length - 1].focus();
+        }
+    }, 50);
 }
 
 function rimuoviCampoPuntoRaccolta(index) {
-    if (puntiRaccoltaCorrenti.length <= 1) return;
+    if (!Array.isArray(puntiRaccoltaCorrenti) || puntiRaccoltaCorrenti.length <= 1) return;
     puntiRaccoltaCorrenti.splice(index, 1);
     renderCampiPuntiRaccolta();
 }
 
 function aggiornaValorePuntoRaccolta(index, val) {
-    if (puntiRaccoltaCorrenti[index] !== undefined) {
+    if (Array.isArray(puntiRaccoltaCorrenti) && puntiRaccoltaCorrenti[index] !== undefined) {
         puntiRaccoltaCorrenti[index] = val;
     }
 }
+
+// BINDING GLOBALE PER EVENTI INLINE HTML ONCLICK / ONINPUT
+window.renderCampiPuntiRaccolta = renderCampiPuntiRaccolta;
+window.aggiungiCampoPuntoRaccolta = aggiungiCampoPuntoRaccolta;
+window.rimuoviCampoPuntoRaccolta = rimuoviCampoPuntoRaccolta;
+window.aggiornaValorePuntoRaccolta = aggiornaValorePuntoRaccolta;
+window.gestisciAutocompletePuntoRaccolta = gestisciAutocompletePuntoRaccolta;
+window.selezionaPuntoRaccoltaAutocomplete = selezionaPuntoRaccoltaAutocomplete;
 
 const DEFAULT_ITINERARIES = [];
 
