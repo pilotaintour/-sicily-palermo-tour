@@ -8,10 +8,14 @@ class AdminSmartParser {
         this.monthMap = {
             'gennaio': '01', 'febbraio': '02', 'marzo': '03', 'aprile': '04',
             'maggio': '05', 'giugno': '06', 'luglio': '07', 'agosto': '08',
-            'settembre': '09', 'ottobre': '10', 'novembren': '11', 'dicembre': '12',
+            'settembre': '09', 'ottobre': '10', 'novembre': '11', 'dicembre': '12',
             'gen': '01', 'feb': '02', 'mar': '03', 'apr': '04',
             'mag': '05', 'giu': '06', 'lug': '07', 'ago': '08',
-            'set': '09', 'ott': '10', 'nov': '11', 'dic': '12'
+            'set': '09', 'ott': '10', 'nov': '11', 'dic': '12',
+            'january': '01', 'february': '02', 'march': '03', 'april': '04',
+            'may': '05', 'june': '06', 'july': '07', 'august': '08',
+            'september': '09', 'october': '10', 'november': '11', 'december': '12',
+            'jan': '01', 'mar': '03', 'may': '05', 'jun': '06', 'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'dec': '12'
         };
     }
 
@@ -78,12 +82,29 @@ class AdminSmartParser {
         // 4. Estrazione Data Fissa Evento
         let singleFixedDate = '';
         let availabilityType = 'weekly';
-        const dateMatch = fullText.match(/(\d{1,2})\s+([a-zà-ú]{3,10})(?:\s+(\d{4}))?/i) || fullText.match(/(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?/);
+        const dateMatch = fullText.match(/(\d{1,2})\s+([a-zà-ú]{3,10})(?:\s+(\d{4}))?/i) ||
+                          fullText.match(/([a-zà-ú]{3,10})\s+(\d{1,2})(?:[st|nd|rd|th]*)?(?:\s*,?\s*(\d{4}))?/i) ||
+                          fullText.match(/(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?/);
         if (dateMatch) {
-            const dayNum = parseInt(dateMatch[1], 10);
-            let monthStr = dateMatch[2] ? dateMatch[2].toLowerCase() : '';
-            let monthNum = this.monthMap[monthStr] || (dateMatch[2] ? dateMatch[2].padStart(2, '0') : '');
-            let year = dateMatch[3] || new Date().getFullYear();
+            let dayNum = 0;
+            let monthStr = '';
+            let year = new Date().getFullYear();
+
+            if (dateMatch[1] && /^\d+$/.test(dateMatch[1]) && dateMatch[2] && isNaN(dateMatch[2])) {
+                dayNum = parseInt(dateMatch[1], 10);
+                monthStr = dateMatch[2].toLowerCase();
+                if (dateMatch[3]) year = dateMatch[3];
+            } else if (dateMatch[1] && isNaN(dateMatch[1]) && dateMatch[2] && /^\d+$/.test(dateMatch[2])) {
+                monthStr = dateMatch[1].toLowerCase();
+                dayNum = parseInt(dateMatch[2], 10);
+                if (dateMatch[3]) year = dateMatch[3];
+            } else if (dateMatch[1] && dateMatch[2]) {
+                dayNum = parseInt(dateMatch[1], 10);
+                monthStr = dateMatch[2];
+                if (dateMatch[3]) year = dateMatch[3];
+            }
+
+            let monthNum = this.monthMap[monthStr] || (monthStr ? monthStr.padStart(2, '0') : '');
             if (String(year).length === 2) year = '20' + year;
 
             if (dayNum > 0 && dayNum <= 31 && monthNum) {
@@ -96,10 +117,10 @@ class AdminSmartParser {
         // 5. Estrazione Punti di Raccolta e Orari
         const pickupPoints = [];
         lines.forEach(line => {
-            if (/partenz|raccolta|fermat|giotto|villabate|bagheria|piazza|piazzale|ore\s*\d+/i.test(line)) {
+            if (/partenz|raccolta|fermat|stop|giotto|villabate|bagheria|piazza|piazzale|ore\s*\d+|at\s*\d+/i.test(line)) {
                 let cleanLine = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, '').trim();
                 cleanLine = cleanLine.replace(/^[:\s\*-]+/g, '').trim();
-                if (cleanLine && cleanLine.length > 3 && !cleanLine.toLowerCase().startsWith('partenze')) {
+                if (cleanLine && cleanLine.length > 3 && !cleanLine.toLowerCase().startsWith('partenze') && !cleanLine.toLowerCase().startsWith('stops')) {
                     pickupPoints.push(cleanLine);
                 }
             }
