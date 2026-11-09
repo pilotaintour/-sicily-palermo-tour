@@ -106,10 +106,25 @@ class StripePaymentManager {
     }
 
     autoCompilaTestCard() {
-        alert("🧪 CARTA DI TEST STRIPE:\n\n• Numero: 4242 4242 4242 4242\n• Scadenza: Qualsiasi data futura (es. 12/28)\n• CVC: 123 (o qualsiasi 3 cifre)\n\nNota: Per sicurezza bancaria PCI-DSS, inserisci questi numeri direttamente nel campo protetto di Stripe qui sotto.");
+        const numFallback = document.getElementById('stripe-card-number-fallback');
+        const expFallback = document.getElementById('stripe-card-expiry-fallback');
+        const cvcFallback = document.getElementById('stripe-card-cvc-fallback');
+        const nameInput = document.getElementById('stripe-cardholder-name');
+
+        if (numFallback) numFallback.value = "4242 4242 4242 4242";
+        if (expFallback) expFallback.value = "12/28";
+        if (cvcFallback) cvcFallback.value = "123";
+        if (nameInput && (!nameInput.value || nameInput.value === 'MARIO ROSSI')) {
+            nameInput.value = "MARIO ROSSI";
+        }
+
         const vnum = document.getElementById('vcard-number-display');
         if (vnum) {
             vnum.textContent = "4242 •••• •••• 4242 (VISA)";
+        }
+
+        if (this.cardNumber && this.isMounted) {
+            alert("🧪 CARTA DI TEST STRIPE:\n\n• Numero: 4242 4242 4242 4242\n• Scadenza: Qualsiasi data futura (es. 12/28)\n• CVC: 123\n\nNota: Inserisci questi dati nel campo protetto di Stripe.");
         }
     }
 
@@ -164,10 +179,12 @@ class StripePaymentManager {
                             <div style="font-size: 1.3rem; opacity: 0.9;">📶</div>
                         </div>
 
-                        <!-- Numero Carta (Stripe CardNumber Element) -->
+                        <!-- Numero Carta (Stripe CardNumber Element o Fallback) -->
                         <div style="margin-bottom: 18px;">
                             <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">💳 Numero Carta *</span>
-                            <div id="stripe-card-number-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 12px 14px; min-height: 24px;"></div>
+                            <div id="stripe-card-number-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 4px 10px; min-height: 40px; display: flex; align-items: center;">
+                                <input type="text" id="stripe-card-number-fallback" placeholder="4242 4242 4242 4242" style="width: 100%; background: transparent; border: none; color: #ffffff; font-size: 1rem; font-family: monospace; outline: none; padding: 6px 0;">
+                            </div>
                         </div>
 
                         <!-- Footer: Intestatario, Scadenza, CVC -->
@@ -178,11 +195,15 @@ class StripePaymentManager {
                             </div>
                             <div>
                                 <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">⏳ Scadenza *</span>
-                                <div id="stripe-card-expiry-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 11px 10px; min-height: 20px;"></div>
+                                <div id="stripe-card-expiry-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 4px 10px; min-height: 40px; display: flex; align-items: center;">
+                                    <input type="text" id="stripe-card-expiry-fallback" placeholder="12/28" style="width: 100%; background: transparent; border: none; color: #ffffff; font-size: 0.9rem; font-family: monospace; outline: none; padding: 6px 0;">
+                                </div>
                             </div>
                             <div>
                                 <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">🔒 CVC / CVV *</span>
-                                <div id="stripe-card-cvc-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 11px 10px; min-height: 20px;"></div>
+                                <div id="stripe-card-cvc-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 4px 10px; min-height: 40px; display: flex; align-items: center;">
+                                    <input type="text" id="stripe-card-cvc-fallback" placeholder="123" maxlength="4" style="width: 100%; background: transparent; border: none; color: #ffffff; font-size: 0.9rem; font-family: monospace; outline: none; padding: 6px 0;">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -217,8 +238,17 @@ class StripePaymentManager {
             this.init();
         }
 
-        if (this.elements) {
+        const pk = this.getPublishableKey();
+        if (this.elements && pk && pk.startsWith('pk_') && !pk.includes('YOUR_STRIPE')) {
             try {
+                const numMount = document.getElementById('stripe-card-number-mount');
+                const expMount = document.getElementById('stripe-card-expiry-mount');
+                const cvcMount = document.getElementById('stripe-card-cvc-mount');
+
+                if (numMount) numMount.innerHTML = '';
+                if (expMount) expMount.innerHTML = '';
+                if (cvcMount) cvcMount.innerHTML = '';
+
                 this.cardNumber = this.elements.create('cardNumber', {
                     style: {
                         base: {
@@ -258,8 +288,11 @@ class StripePaymentManager {
                 this.cardCvc.mount('#stripe-card-cvc-mount');
                 this.isMounted = true;
             } catch (err) {
-                console.error("Errore mount split card elements:", err);
+                console.warn("Mantenimento campi fallback carta di credito:", err);
+                this.isMounted = false;
             }
+        } else {
+            this.isMounted = false;
         }
     }
 
@@ -436,6 +469,18 @@ class StripePaymentManager {
         }
 
         // Fallback se Stripe Elements non è caricato
+        const numFallback = document.getElementById('stripe-card-number-fallback');
+        if (numFallback) {
+            const rawVal = numFallback.value.replace(/\s+/g, '');
+            if (!rawVal || rawVal.length < 13) {
+                if (errorElement) {
+                    errorElement.textContent = "⚠️ Per favore inserisci un numero di carta di credito valido (es. 4242 4242 4242 4242).";
+                    errorElement.style.display = 'block';
+                }
+                return { success: false, error: "Numero di carta non valido." };
+            }
+        }
+
         const sk = this.getSecretKey();
         const amountCents = Math.round((parseFloat(totaleEuro) || 50) * 100);
 
