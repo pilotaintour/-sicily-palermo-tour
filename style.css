@@ -10,6 +10,35 @@ body {
     background-color: #f8fafc;
     color: #0f172a;
     line-height: 1.6;
+    top: 0px !important;
+    position: static !important;
+}
+
+/* Nasconde la barra bianca di Google Translate in cima alla pagina */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+#goog-gt-tt {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.goog-text-highlight {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Impedisce la barra/sfondo bianco di compilazione automatica del browser sugli input */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+    transition: background-color 5000s ease-in-out 0s !important;
 }
 
 .hidden {
