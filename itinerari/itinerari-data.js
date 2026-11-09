@@ -181,11 +181,22 @@ function renderItinerariGrid(itinerariList, categoria) {
     if (categoria === 'Tutti') {
         filtrati = itinerariList;
     } else if (categoria === 'Tour Giornalieri') {
-        filtrati = itinerariList.filter(i => String(i.category || '').startsWith('Tour Giornalieri'));
+        filtrati = itinerariList.filter(i =>
+            String(i.category || '').startsWith('Tour Giornalieri') ||
+            String(i.category || '').toLowerCase().includes('giornalier') ||
+            String(i.duration || '').toLowerCase().includes('1 giorno')
+        );
     } else if (categoria === 'Tour di Più Giorni') {
-        filtrati = itinerariList.filter(i => String(i.category || '').toLowerCase().includes('più giorni') || String(i.category || '').toLowerCase().includes('piu giorni'));
+        filtrati = itinerariList.filter(i =>
+            String(i.category || '').toLowerCase().includes('più giorni') ||
+            String(i.category || '').toLowerCase().includes('piu giorni') ||
+            String(i.duration || '').toLowerCase().includes('giorni')
+        );
     } else if (categoria === 'Tour Esteri') {
-        filtrati = itinerariList.filter(i => String(i.category || '').startsWith('Tour Esteri'));
+        filtrati = itinerariList.filter(i =>
+            String(i.category || '').startsWith('Tour Esteri') ||
+            String(i.category || '').toLowerCase().includes('ester')
+        );
     } else {
         const catLower = categoria.toLowerCase();
         filtrati = itinerariList.filter(i => (
@@ -199,7 +210,7 @@ function renderItinerariGrid(itinerariList, categoria) {
         grid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
                 <h3>Nessun itinerario trovato per "${escapeHtml(categoria)}"</h3>
-                <p>Prova a selezionare un'altra categoria o durata!</p>
+                <p>Seleziona un'altra categoria o regione per visualizzare i tour disponibili!</p>
             </div>
         `;
         return;
@@ -241,24 +252,28 @@ function renderItinerariGrid(itinerariList, categoria) {
     }
 }
 
-// Gestione dei bottoni e select filtro categoria
+// Gestione dei bottoni e select filtro categoria con sincro automatico
 function filtraCategoria(categoria, btnElement) {
     const allFilters = document.querySelectorAll('.filter-btn, .filter-select-dropdown');
     allFilters.forEach(el => {
         el.classList.remove('active');
-        if (el.tagName === 'SELECT' && el !== btnElement) {
-            el.selectedIndex = 0;
+        if (el.tagName === 'SELECT') {
+            let foundMatch = false;
+            Array.from(el.options).forEach(opt => {
+                if (opt.value === categoria) {
+                    el.value = opt.value;
+                    foundMatch = true;
+                    el.classList.add('active');
+                }
+            });
+            if (!foundMatch && el !== btnElement) {
+                el.selectedIndex = 0;
+            }
         }
     });
 
     if (btnElement) {
         btnElement.classList.add('active');
-    } else {
-        allFilters.forEach(el => {
-            if (el.textContent.includes(categoria) || (categoria === 'Tutti' && el.textContent.includes('Tutti'))) {
-                el.classList.add('active');
-            }
-        });
     }
 
     caricaItinerari(categoria);
