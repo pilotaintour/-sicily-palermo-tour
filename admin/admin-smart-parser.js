@@ -142,8 +142,8 @@ class AdminSmartParser {
             if (num) price = `${num.replace('.', ',')}€ a persona`;
         }
 
-        // 3. Estrazione Categoria (Tour Giornalieri, Tour di Più Giorni, Tour Esteri, Trasporti)
-        let category = 'Tour Giornalieri';
+        // 3. Estrazione Categoria e Regione Italia per i Tour Giornalieri
+        let category = 'Tour Giornalieri (Sicilia)';
         const lowerText = fullText.toLowerCase();
 
         if (/ester|volo|aeroporto|spagna|francia|grecia|londra|parigi|croazia|albania|egitto|malta|islanda|svizzera|germania|europa|internaz/i.test(lowerText)) {
@@ -153,7 +153,24 @@ class AdminSmartParser {
         } else if (/transfer|navetta|taxi|noleggio|shuttle|aeroporto transfer|bus transfer/i.test(lowerText)) {
             category = 'Trasporti';
         } else {
-            category = 'Tour Giornalieri';
+            // Rileva regione specifica per i Tour Giornalieri
+            if (/campania|napoli|costiera|amalfi|pompei|caserta|salerno|sorrento/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Campania)';
+            } else if (/lazio|roma|viterbo|latina|tivoli/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Lazio)';
+            } else if (/toscana|firenze|pisa|siena|chianti/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Toscana)';
+            } else if (/lombardia|milano|como|bergamo|brescia/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Lombardia)';
+            } else if (/puglia|bari|lecce|gallipoli|polignano|alberobello/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Puglia)';
+            } else if (/calabria|tropea|reggio|cosenza/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Calabria)';
+            } else if (/sardegna|cagliari|olbia|alghero/i.test(lowerText)) {
+                category = 'Tour Giornalieri (Sardegna)';
+            } else {
+                category = 'Tour Giornalieri (Sicilia)';
+            }
         }
 
         // 4. Estrazione Data o Date Fisse Evento

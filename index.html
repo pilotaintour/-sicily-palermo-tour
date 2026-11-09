@@ -14,6 +14,46 @@
     <link rel="stylesheet" href="recensioni/recensioni.css?v=2">
     <link rel="stylesheet" href="cookie/cookie-banner.css?v=200">
     <link rel="stylesheet" href="mobile-adapt.css?v=2">
+    <style>
+        .nav-dropdown-item:hover .nav-dropdown-menu {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        .nav-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #ffffff;
+            min-width: 210px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-radius: 10px;
+            padding: 8px 0;
+            list-style: none;
+            z-index: 1000;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .nav-dropdown-menu li {
+            margin: 0;
+            padding: 0;
+        }
+        .nav-dropdown-menu li a {
+            display: block;
+            padding: 9px 16px;
+            color: #0b2545;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.15s ease;
+            white-space: nowrap;
+        }
+        .nav-dropdown-menu li a:hover {
+            background: #f1f5f9;
+            color: #d97706;
+        }
+    </style>
 </head>
 <body>
 
@@ -52,7 +92,22 @@
             <img src="logo.svg" alt="Sicily Palermo Tour Logo">
         </a>
         <ul class="main-nav-links">
-            <li><a href="#itinerari" onclick="filtraCategoria('Tour Giornalieri')">☀️ TOUR GIORNALIERI</a></li>
+            <li class="nav-dropdown-item" style="position: relative;">
+                <a href="#itinerari" onclick="filtraCategoria('Tour Giornalieri')" style="display: inline-flex; align-items: center; gap: 4px;">
+                    ☀️ TOUR GIORNALIERI <span style="font-size: 0.7rem;">▼</span>
+                </a>
+                <ul class="nav-dropdown-menu">
+                    <li><a href="#itinerari" onclick="filtraCategoria('Tour Giornalieri')">🇮🇹 Tutte le Regioni</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Sicilia')">🏝️ Sicilia</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Campania')">🌋 Campania</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Lazio')">🏛️ Lazio</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Toscana')">🍷 Toscana</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Lombardia')">🏰 Lombardia</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Puglia')">🏖️ Puglia</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Calabria')">🌶️ Calabria</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Sardegna')">🌊 Sardegna</a></li>
+                </ul>
+            </li>
             <li><a href="#itinerari" onclick="filtraCategoria('Tour di Più Giorni')">🧳 TOUR DI PIÙ GIORNI</a></li>
             <li><a href="#itinerari" onclick="filtraCategoria('Tour Esteri')">✈️ TOUR ESTERI</a></li>
             <li><a href="#itinerari" onclick="filtraCategoria('Trasporti')">🚌 TRASPORTI &amp; TRANSFER</a></li>
@@ -89,9 +144,22 @@
             </div>
 
             <!-- Filtri per Categoria -->
-            <div class="filter-container">
+            <div class="filter-container" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 25px;">
                 <button class="filter-btn active" onclick="filtraCategoria('Tutti', this)">Tutti</button>
-                <button class="filter-btn" onclick="filtraCategoria('Tour Giornalieri', this)">☀️ Tour Giornalieri</button>
+
+                <!-- Select a tendina per Tour Giornalieri / Regioni Italia -->
+                <select class="filter-select-dropdown" aria-label="Seleziona Regione per Tour Giornalieri" onchange="filtraCategoria(this.value, this)" style="padding: 10px 16px; border: 1.5px solid #cbd5e1; border-radius: 25px; font-weight: bold; background: #ffffff; color: #0b2545; font-size: 0.9rem; cursor: pointer; font-family: inherit; box-shadow: 0 2px 6px rgba(0,0,0,0.05); outline: none;">
+                    <option value="Tour Giornalieri">☀️ Tour Giornalieri (Tutte le Regioni) ▼</option>
+                    <option value="Sicilia">🏝️ Sicilia</option>
+                    <option value="Campania">🌋 Campania</option>
+                    <option value="Lazio">🏛️ Lazio</option>
+                    <option value="Toscana">🍷 Toscana</option>
+                    <option value="Lombardia">🏰 Lombardia</option>
+                    <option value="Puglia">🏖️ Puglia</option>
+                    <option value="Calabria">🌶️ Calabria</option>
+                    <option value="Sardegna">🌊 Sardegna</option>
+                </select>
+
                 <button class="filter-btn" onclick="filtraCategoria('Tour di Più Giorni', this)">🧳 Tour di Più Giorni</button>
                 <button class="filter-btn" onclick="filtraCategoria('Tour Esteri', this)">✈️ Tour Esteri</button>
                 <button class="filter-btn" onclick="filtraCategoria('Trasporti', this)">🚌 Trasporti &amp; Transfer</button>
