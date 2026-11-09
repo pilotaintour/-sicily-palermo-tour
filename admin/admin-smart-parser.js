@@ -240,6 +240,17 @@ class AdminSmartParser {
             }
         }
 
+        const hRegex = /\b([0-1]?[0-9]|2[0-3])h(([0-5][0-9]))?\b/gi;
+        while ((timeMatch = hRegex.exec(fullText)) !== null) {
+            const hh = String(timeMatch[1]).padStart(2, '0');
+            const mm = timeMatch[2] || '00';
+            const timeStr = `${hh}:${mm}`;
+            if (!seenTimes.has(timeStr)) {
+                seenTimes.add(timeStr);
+                extractedTimeSlots.push({ time: timeStr, capacity: 53 });
+            }
+        }
+
         const oreRegex = /\bore\s*([0-1]?[0-9]|2[0-3])(?!\s*[:\.]\s*\d)\b/gi;
         while ((timeMatch = oreRegex.exec(fullText)) !== null) {
             const hh = String(timeMatch[1]).padStart(2, '0');

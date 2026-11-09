@@ -235,6 +235,10 @@
                 <p>Seleziona una delle meraviglie di Palermo per iniziare la tua avventura.</p>
             </div>
 
+            <!-- Sezioni Speciali: Consigliati per Te & Più alla Moda -->
+            <div id="sezione-consigliati-container"></div>
+            <div id="sezione-moda-container"></div>
+
             <!-- Filtri per Categoria -->
             <div class="filter-container">
                 <button class="filter-btn active" onclick="filtraCategoria('Tutti', this)">Tutti</button>
@@ -270,13 +274,9 @@
                 <button class="filter-btn" onclick="filtraCategoria('Trasporti', this)">🚌 Trasporti &amp; Transfer</button>
             </div>
 
-            <!-- Slider Orizzontale Itinerari Stile GetYourGuide -->
-            <div class="grid-wrapper">
-                <button type="button" class="slider-nav-btn left" onclick="scorriSliderOrizzontale('itinerari-grid', -310)" title="Scorri a sinistra">❮</button>
-                <div id="itinerari-grid" class="grid">
-                    <!-- Verrà popolato dinamicamente via JavaScript -->
-                </div>
-                <button type="button" class="slider-nav-btn right" onclick="scorriSliderOrizzontale('itinerari-grid', 310)" title="Scorri a destra">❯</button>
+            <!-- Contenitore Sezioni Categorie Distinte (Uno Sopra L'altro) -->
+            <div id="itinerari-sections-wrapper">
+                <!-- Popolato dinamicamente da itinerari-data.js -->
             </div>
         </section>
 

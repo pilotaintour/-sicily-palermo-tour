@@ -163,12 +163,34 @@ class Step4Conferma {
                 </div>
             ` : ''}
 
+            <!-- Form Inserimento Codice Promo / Rivenditore -->
+            <div style="margin-top: 16px; background: #f0f9ff; padding: 14px; border-radius: 12px; border: 1.5px solid #0284c7;">
+                <label for="step4-promo-input" style="display: block; font-weight: 700; font-size: 0.9rem; color: #0369a1; margin-bottom: 6px;">
+                    🏷️ Hai un Codice Sconto / Promo Rivenditore?
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="step4-promo-input" value="${data.promoCode || ''}" placeholder="Es. HOTEL10" style="flex: 1; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: bold; text-transform: uppercase;">
+                    <button type="button" onclick="if(window.wizardManager) window.wizardManager.applicaCodicePromoFromInput()" class="btn-primary" style="background: #0284c7; padding: 10px 16px; font-weight: bold;">
+                        Applica Sconto
+                    </button>
+                </div>
+                <div id="step4-promo-msg" style="font-size: 0.85rem; margin-top: 6px; font-weight: bold;">
+                    ${data.promoValid ? `<span style="color:#166534;">✅ Codice "${data.promoCode}" applicato! Sconto del ${data.discountPercent || 10}% attivato (-€${data.discountAmount}).</span>` : ''}
+                </div>
+            </div>
+
             <!-- Ripartizione Trasparente del Prezzo -->
             <div style="border-top: 2px dashed #cbd5e1; padding-top: 14px; margin-top: 16px;">
                 <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: #64748b; margin-bottom: 6px;">
                     <span>Quota Partecipanti (${data.adults} Adulti${data.children > 0 ? `, ${data.children} Bambini` : ''}):</span>
-                    <span>€${data.total}</span>
+                    <span>€${data.originalTotal || data.total}</span>
                 </div>
+                ${data.promoValid ? `
+                    <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #166534; font-weight: 700; margin-bottom: 6px;">
+                        <span>🏷️ Sconto Promo (${data.promoCode} -${data.discountPercent || 10}%):</span>
+                        <span>-€${data.discountAmount}</span>
+                    </div>
+                ` : ''}
                 <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: #166534; margin-bottom: 10px;">
                     <span>Tasse, Servizi & Assistenza Guida:</span>
                     <span>Inclusi (0.00€)</span>

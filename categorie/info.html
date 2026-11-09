@@ -90,9 +90,13 @@
     <nav style="background: rgba(11, 37, 69, 0.75); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.15); margin-top: 10px; width: 100%; text-align: center;">
         <ul style="display: flex; justify-content: center; align-items: center; gap: 30px; list-style: none; margin: 0 auto; padding: 14px 15px; flex-wrap: wrap; text-align: center;">
             <li><a href="../index.html" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">← Torna alla Home</a></li>
-            <li><a href="../index.html#itinerari" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">Itinerari</a></li>
+            <li><a href="tour-giornalieri.html" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">☀️ Tour Giornalieri</a></li>
+            <li><a href="tour-piu-giorni.html" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">🧳 Tour di Più Giorni</a></li>
+            <li><a href="tour-esteri.html" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">✈️ Tour Esteri</a></li>
+            <li><a href="trasporti.html" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">🚌 Trasporti &amp; Transfer</a></li>
             <li><a href="../index.html#recensioni" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">Recensioni</a></li>
             <li><a href="../index.html#contatti" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 1rem;">Contatti</a></li>
+            <li><div id="google_translate_element" style="display:inline-block; vertical-align:middle;"></div></li>
         </ul>
     </nav>
 
@@ -354,10 +358,10 @@
 
             caricaTourInfo();
 
-            if (window.cloudDB) {
+            if (window.cloudDB && typeof window.cloudDB.fetchItinerariCloud === 'function') {
                 window.cloudDB.fetchItinerariCloud().then(() => {
                     caricaTourInfo();
-                });
+                }).catch(() => {});
             }
         });
     </script>

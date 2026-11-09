@@ -54,6 +54,7 @@
                 <button class="tab-btn active" id="tab-itinerari-btn" onclick="mostraSezione('sezione-itinerari', this)">📋 Gestione Itinerari</button>
                 <button class="tab-btn" id="tab-prenotazioni-btn" onclick="mostraSezione('sezione-prenotazioni', this)">📥 Prenotazioni (<span id="cnt-prenotazioni-badge">0</span>)</button>
                 <button class="tab-btn" id="tab-transazioni-btn" onclick="mostraSezione('sezione-transazioni', this)">💳 Transazioni & Incassi (<span id="cnt-transazioni-badge">0</span>)</button>
+                <button class="tab-btn" id="tab-promoters-btn" onclick="mostraSezione('sezione-promoters', this)">🤝 Rivenditori & Promoter (<span id="cnt-promoters-badge">0</span>)</button>
                 <button class="tab-btn" id="tab-impostazioni-btn" onclick="mostraSezione('sezione-impostazioni', this)">⚙️ Impostazioni Sito</button>
                 <button class="tab-btn" id="tab-recensioni-btn" onclick="mostraSezione('sezione-recensioni', this)">⭐ Gestione Recensioni</button>
             </div>
@@ -479,6 +480,64 @@
                 </div>
             </div>
 
+            <!-- SEZIONE PROMOTERS & RIVENDITORI -->
+            <div id="sezione-promoters" class="card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2 style="color: #1b4f72; margin: 0;">🤝 Gestione Rivenditori, Affiliate & Codici Promo</h2>
+                        <p style="color: #64748b; font-size: 0.9rem; margin: 4px 0 0 0;">Crea codici promozionali per hotel, agenzie e promoter. Monitora vendite e commissioni spettanti.</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="../partner/index.html" target="_blank" class="btn-secondary btn-small" style="background: #0284c7; color: white;">👁️ Apri Pannello Riservato Partner</a>
+                        <button class="btn-secondary btn-small" onclick="caricaPromotersAdmin()">🔄 Aggiorna Lista</button>
+                    </div>
+                </div>
+
+                <!-- Form Creazione Nuovo Promoter -->
+                <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; border: 1.5px solid #0284c7; margin-bottom: 24px;">
+                    <h3 style="color: #0369a1; font-size: 1.1rem; margin-bottom: 8px;">➕ Aggiungi Nuovo Rivenditore / Partner</h3>
+                    <form id="formNuovoPromoter" onsubmit="salvaNuovoPromoterAdmin(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-items: end;">
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Nome Rivenditore / Hotel *</label>
+                            <input type="text" id="new-promoter-name" required placeholder="Es. Hotel Plaza Palermo" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Codice Promo Univoco *</label>
+                            <input type="text" id="new-promoter-code" required placeholder="Es. HOTEL10" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; text-transform: uppercase;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Email Accesso Partner *</label>
+                            <input type="email" id="new-promoter-email" required placeholder="hotel@example.com" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Password Accesso Partner</label>
+                            <input type="text" id="new-promoter-password" placeholder="Partner123!" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Sconto Turista (%)</label>
+                            <input type="number" id="new-promoter-discount" value="10" min="1" max="100" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Commissione Partner (%)</label>
+                            <input type="number" id="new-promoter-commission" value="10" min="1" max="100" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Telefono / WhatsApp</label>
+                            <input type="text" id="new-promoter-phone" placeholder="+39 091 123456" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn-primary" style="background: #0284c7; width: 100%; padding: 11px; font-weight: bold; justify-content: center;">
+                                💾 Salva Rivenditore
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="admin-promoters-list">
+                    <!-- Popolato via JS -->
+                </div>
+            </div>
+
             <!-- SEZIONE 3: Impostazioni Sito -->
             <div id="sezione-impostazioni" class="card hidden">
                 <h2 style="color: #1b4f72; font-size: 1.5rem; margin-bottom: 8px;">⚙️ Impostazioni del Sito</h2>
@@ -668,7 +727,7 @@
             <div style="background: #f0f9ff; padding: 12px 15px; border-radius: 8px; border: 1px solid #bae6fd; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <label for="capienza-selezione-input" style="font-weight: bold; color: #0369a1; font-size: 0.9rem;">🎯 Capienza per gli orari da cliccare:</label>
-                    <input type="number" id="capienza-selezione-input" value="15" min="1" max="200" style="width: 70px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: bold; text-align: center;">
+                    <input type="number" id="capienza-selezione-input" value="53" min="1" max="200" style="width: 70px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: bold; text-align: center;">
                     <span style="font-size: 0.85rem; color: #0369a1; font-weight: 600;">persone max</span>
                 </div>
                 <button type="button" class="btn-danger btn-small" onclick="applicaPresetOrari('reset')">🧹 Deseleziona Tutti</button>
@@ -711,6 +770,8 @@
     <script src="admin-archivio.js?v=30"></script>
     <script src="admin-prenotazioni.js?v=30"></script>
     <script src="admin-transazioni.js?v=30"></script>
+    <script src="../partner/partner.js?v=30"></script>
+    <script src="admin-promoter.js?v=30"></script>
     <script src="admin-impostazioni.js?v=30"></script>
     <script src="admin-recensioni.js?v=30"></script>
     <script src="admin.js?v=30"></script>

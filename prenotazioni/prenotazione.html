@@ -14,6 +14,7 @@
     <script src="stripe-payment.js?v=10"></script>
     <script src="../email/email-service.js?v=10"></script>
     <script src="../cloud/cloud-db.js?v=10"></script>
+    <script src="../partner/partner.js?v=10"></script>
     <script src="../itinerari/itinerari-data.js?v=10"></script>
     <script src="calendario.js?v=11"></script>
     <script src="step1-data-orario.js?v=11"></script>
@@ -146,6 +147,11 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const tourId = urlParams.get('tourId') || '1';
 
+                const promoParam = urlParams.get('promo');
+                if (promoParam) {
+                    this.bookingData.promoCode = promoParam.trim().toUpperCase();
+                }
+
                 let itinerari = [];
                 if (typeof getItinerari === 'function') {
                     try { itinerari = getItinerari() || []; } catch (e) {}
@@ -265,11 +271,68 @@
                 const adults = parseInt(this.bookingData.adults, 10) || 1;
                 const children = parseInt(this.bookingData.children, 10) || 0;
 
-                const totale = (adults * prezzoBase) + (children * (prezzoBase * 0.5));
-                this.bookingData.total = totale > 0 ? totale.toFixed(2) : '25.00';
+                const totaleLordo = (adults * prezzoBase) + (children * (prezzoBase * 0.5));
+                this.bookingData.originalTotal = totaleLordo.toFixed(2);
+
+                let finalTotal = totaleLordo;
+                let promoValid = false;
+
+                if (this.bookingData.promoCode && typeof getPromoters === 'function') {
+                    const promoters = getPromoters();
+                    const codeUpper = String(this.bookingData.promoCode).toUpperCase().trim();
+                    const promoter = promoters.find(p => String(p.code).toUpperCase().trim() === codeUpper);
+
+                    if (promoter) {
+                        const discRate = (parseFloat(promoter.discountPercent) || 10) / 100;
+                        const commRate = (parseFloat(promoter.commissionPercent) || 10) / 100;
+                        const discAmount = totaleLordo * discRate;
+                        const commAmount = totaleLordo * commRate;
+
+                        finalTotal = totaleLordo - discAmount;
+                        promoValid = true;
+
+                        this.bookingData.discountAmount = discAmount.toFixed(2);
+                        this.bookingData.commissionAmount = commAmount.toFixed(2);
+                        this.bookingData.discountPercent = promoter.discountPercent || 10;
+                        this.bookingData.commissionPercent = promoter.commissionPercent || 10;
+                        this.bookingData.promoterId = promoter.id;
+                        this.bookingData.promoterName = promoter.name;
+                    }
+                }
+
+                if (!promoValid) {
+                    this.bookingData.discountAmount = '0.00';
+                    this.bookingData.commissionAmount = '0.00';
+                    this.bookingData.promoValid = false;
+                } else {
+                    this.bookingData.promoValid = true;
+                }
+
+                this.bookingData.total = finalTotal > 0 ? finalTotal.toFixed(2) : '25.00';
 
                 if (this.step4Module) {
                     this.step4Module.renderSummary(this.bookingData);
+                }
+            }
+
+            applicaCodicePromoFromInput() {
+                const input = document.getElementById('step4-promo-input');
+                const msgBox = document.getElementById('step4-promo-msg');
+                if (!input) return;
+
+                const code = input.value.trim().toUpperCase();
+                if (!code) {
+                    if (msgBox) msgBox.innerHTML = '<span style="color:#dc2626;">⚠️ Inserisci un codice promo valido.</span>';
+                    return;
+                }
+
+                this.bookingData.promoCode = code;
+                this.calcolaEInviaRiepilogo();
+
+                if (this.bookingData.promoValid) {
+                    if (msgBox) msgBox.innerHTML = `<span style="color:#166534;">✅ Codice "${code}" applicato! Sconto del ${this.bookingData.discountPercent || 10}% attivato (-€${this.bookingData.discountAmount}).</span>`;
+                } else {
+                    if (msgBox) msgBox.innerHTML = `<span style="color:#dc2626;">❌ Codice promo "${code}" non valido o non trovato.</span>`;
                 }
             }
 

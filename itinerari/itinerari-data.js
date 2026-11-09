@@ -17,16 +17,9 @@ function pulisciVecchiItinerariDemo(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
         if (!item) return false;
-        const id = String(item.id || '');
         const title = String(item.title || '').toLowerCase().trim();
-        const price = String(item.price || '').toLowerCase().trim();
-        const desc = String(item.shortDesc || item.fullDesc || '').toLowerCase().trim();
-
-        if (id === '1' || id === '2' || id === '3') return false;
-        if (title.includes('dsf') || title.includes('sdf') || title.includes('fds') || title === 'test' || title === 'asdf' || title === 'prova') return false;
-        if (desc.includes('dsf') || desc.includes('sdf') || desc.includes('fds')) return false;
-        if (price.includes('dsf') || price.includes('sdf')) return false;
-
+        if (!title) return false;
+        if (title === 'dsf' || title === 'sdf' || title === 'fds' || title === 'asdf') return false;
         return true;
     });
 }
@@ -156,11 +149,13 @@ function caricaItinerari(categoria = 'Tutti') {
     const itinerari = getItinerari();
     renderItinerariGrid(itinerari, categoria);
 
-    if (window.cloudDB) {
+    if (window.cloudDB && typeof window.cloudDB.fetchItinerariCloud === 'function') {
         window.cloudDB.fetchItinerariCloud().then(cloudList => {
             if (cloudList && Array.isArray(cloudList) && cloudList.length > 0) {
                 renderItinerariGrid(cloudList, categoria);
             }
+        }).catch(err => {
+            console.warn("Avviso caricamento itinerari cloud:", err);
         });
     }
 }
@@ -173,57 +168,9 @@ function scorriSliderOrizzontale(containerId, offset) {
     }
 }
 
-function renderItinerariGrid(itinerariList, categoria) {
-    const grid = document.getElementById('itinerari-grid');
-    if (!grid) return;
-
-    let filtrati = [];
-    if (categoria === 'Tutti') {
-        filtrati = itinerariList;
-    } else if (categoria === 'Tour Giornalieri') {
-        filtrati = itinerariList.filter(i =>
-            String(i.category || '').startsWith('Tour Giornalieri') ||
-            String(i.category || '').toLowerCase().includes('giornalier') ||
-            String(i.duration || '').toLowerCase().includes('1 giorno')
-        );
-    } else if (categoria === 'Tour di Più Giorni') {
-        filtrati = itinerariList.filter(i =>
-            String(i.category || '').toLowerCase().includes('più giorni') ||
-            String(i.category || '').toLowerCase().includes('piu giorni') ||
-            String(i.duration || '').toLowerCase().includes('giorni')
-        );
-    } else if (categoria === 'Tour Esteri') {
-        filtrati = itinerariList.filter(i =>
-            String(i.category || '').startsWith('Tour Esteri') ||
-            String(i.category || '').toLowerCase().includes('ester')
-        );
-    } else {
-        const catLower = categoria.toLowerCase();
-        filtrati = itinerariList.filter(i => (
-            String(i.category || '').toLowerCase().includes(catLower) ||
-            String(i.duration || '').toLowerCase().includes(catLower) ||
-            String(i.title || '').toLowerCase().includes(catLower)
-        ));
-    }
-
-    if (filtrati.length === 0) {
-        grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
-                <h3>Nessun itinerario trovato per "${escapeHtml(categoria)}"</h3>
-                <p>Seleziona un'altra categoria o regione per visualizzare i tour disponibili!</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Ordina gli itinerari per mostrare prima i Consigliati, Trending ed In Evidenza
-    filtrati = [...filtrati].sort((a, b) => {
-        const scoreA = (a.isConsigliato ? 4 : 0) + (a.isAllaModa ? 2 : 0) + (String(a.featured) === 'true' ? 1 : 0);
-        const scoreB = (b.isConsigliato ? 4 : 0) + (b.isAllaModa ? 2 : 0) + (String(b.featured) === 'true' ? 1 : 0);
-        return scoreB - scoreA;
-    });
-
-    grid.innerHTML = filtrati.map(tour => `
+// Helper per il rendering della singola card tour
+function renderTourCardHTML(tour) {
+    return `
         <div class="card">
             ${generaHtmlCarosello(tour, 'card')}
             <div class="card-content">
@@ -245,7 +192,203 @@ function renderItinerariGrid(itinerariList, categoria) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+}
+
+// Verifica la corrispondenza dell'itinerario con la categoria o sottocategoria selezionata
+function itemMatchesCategory(i, categoria) {
+    if (!categoria || categoria === 'Tutti') return true;
+
+    const catName = String(i.category || '').toLowerCase().trim();
+    const durName = String(i.duration || '').toLowerCase().trim();
+    const titleName = String(i.title || '').toLowerCase().trim();
+    const descName = String(i.shortDesc || i.fullDesc || '').toLowerCase().trim();
+    const target = categoria.toLowerCase().trim();
+
+    const isPiuGiorni = catName.includes('più giorni') || catName.includes('piu giorni') || (durName.includes('giorni') && !durName.includes('1 giorno'));
+    const isEsteri = catName.includes('ester') || catName.includes('europa') || catName.includes('usa') || catName.includes('asia') || catName.includes('africa') || catName.includes('oriente') || catName.includes('oceania');
+    const isTrasporti = catName.includes('trasport') || catName.includes('transfer') || catName.includes('navett');
+
+    if (target === 'tour giornalieri') {
+        return catName.includes('giornalier') || catName.includes('sicilia') || catName.includes('campania') || catName.includes('lazio') || catName.includes('toscana') || catName.includes('lombardia') || catName.includes('puglia') || catName.includes('calabria') || catName.includes('sardegna') || (!isPiuGiorni && !isEsteri && !isTrasporti);
+    }
+    if (target === 'tour di più giorni' || target === 'tour di piu giorni') {
+        return isPiuGiorni;
+    }
+    if (target === 'tour esteri') {
+        return isEsteri;
+    }
+    if (target === 'trasporti' || target === 'transfer') {
+        return isTrasporti;
+    }
+
+    return catName.includes(target) || titleName.includes(target) || descName.includes(target);
+}
+
+// Genera titolo e icona formattata per le intestazioni di sezione
+function getCategoriaTitleAndIcon(cat) {
+    const c = String(cat || '').toLowerCase();
+    if (c === 'tutti') return { title: 'Tutti gli Itinerari', icon: '🏛️' };
+    if (c === 'tour giornalieri') return { title: 'Tour Giornalieri', icon: '☀️' };
+    if (c === 'tour di più giorni' || c === 'tour di piu giorni') return { title: 'Tour di Più Giorni', icon: '🧳' };
+    if (c === 'tour esteri') return { title: 'Tour Esteri', icon: '✈️' };
+    if (c === 'trasporti' || c === 'transfer') return { title: 'Trasporti & Transfer', icon: '🚌' };
+
+    if (c.includes('sicilia')) return { title: 'Tour Giornalieri - 🏝️ Sicilia', icon: '☀️' };
+    if (c.includes('campania')) return { title: 'Tour Giornalieri - 🌋 Campania', icon: '☀️' };
+    if (c.includes('lazio')) return { title: 'Tour Giornalieri - 🏛️ Lazio', icon: '☀️' };
+    if (c.includes('toscana')) return { title: 'Tour Giornalieri - 🍷 Toscana', icon: '☀️' };
+    if (c.includes('lombardia')) return { title: 'Tour Giornalieri - 🏰 Lombardia', icon: '☀️' };
+    if (c.includes('puglia')) return { title: 'Tour Giornalieri - 🏖️ Puglia', icon: '☀️' };
+    if (c.includes('calabria')) return { title: 'Tour Giornalieri - 🌶️ Calabria', icon: '☀️' };
+    if (c.includes('sardegna')) return { title: 'Tour Giornalieri - 🌊 Sardegna', icon: '☀️' };
+
+    if (c.includes('europa')) return { title: 'Tour Esteri - 🇪🇺 Europa', icon: '✈️' };
+    if (c.includes('usa') || c.includes('nord america')) return { title: 'Tour Esteri - 🇺🇸 USA & Nord America', icon: '✈️' };
+    if (c.includes('america del sud') || c.includes('sud america')) return { title: 'Tour Esteri - 🇧🇷 America del Sud', icon: '✈️' };
+    if (c.includes('asia')) return { title: 'Tour Esteri - ⛩️ Asia', icon: '✈️' };
+    if (c.includes('africa')) return { title: 'Tour Esteri - 🦒 Africa', icon: '✈️' };
+    if (c.includes('medio oriente')) return { title: 'Tour Esteri - 🐪 Medio Oriente', icon: '✈️' };
+    if (c.includes('oceania') || c.includes('australia')) return { title: 'Tour Esteri - 🦘 Oceania & Australia', icon: '✈️' };
+
+    return { title: cat, icon: '📍' };
+}
+
+function renderItinerariGrid(itinerariList, categoria) {
+    let container = document.getElementById('itinerari-sections-wrapper');
+    if (!container) {
+        container = document.getElementById('itinerari-grid');
+    }
+    if (!container) return;
+
+    if (!Array.isArray(itinerariList) || itinerariList.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #64748b;">
+                <h3>Nessun itinerario disponibile al momento.</h3>
+            </div>
+        `;
+        return;
+    }
+
+    if (categoria === 'Tutti') {
+        // Mostra le sezioni distinte raggruppate una sotto l'altra
+        const groups = [
+            {
+                key: 'giornalieri',
+                title: '☀️ Tour Giornalieri',
+                tours: itinerariList.filter(i => itemMatchesCategory(i, 'Tour Giornalieri'))
+            },
+            {
+                key: 'piu-giorni',
+                title: '🧳 Tour di Più Giorni',
+                tours: itinerariList.filter(i => itemMatchesCategory(i, 'Tour di Più Giorni'))
+            },
+            {
+                key: 'esteri',
+                title: '✈️ Tour Esteri',
+                tours: itinerariList.filter(i => itemMatchesCategory(i, 'Tour Esteri'))
+            },
+            {
+                key: 'trasporti',
+                title: '🚌 Trasporti & Transfer',
+                tours: itinerariList.filter(i => itemMatchesCategory(i, 'Trasporti'))
+            }
+        ];
+
+        const matchedIds = new Set();
+        groups.forEach(g => g.tours.forEach(t => matchedIds.add(String(t.id))));
+        const altriTours = itinerariList.filter(t => !matchedIds.has(String(t.id)));
+
+        if (altriTours.length > 0) {
+            groups.push({
+                key: 'altri',
+                title: '📍 Altri Tour & Esperienze',
+                tours: altriTours
+            });
+        }
+
+        const nonVuoti = groups.filter(g => g.tours.length > 0);
+
+        if (nonVuoti.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #64748b;">
+                    <h3>Nessun itinerario trovato</h3>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = nonVuoti.map((group, idx) => {
+            const sortedTours = [...group.tours].sort((a, b) => {
+                const scoreA = (a.isConsigliato ? 4 : 0) + (a.isAllaModa ? 2 : 0) + (String(a.featured) === 'true' ? 1 : 0);
+                const scoreB = (b.isConsigliato ? 4 : 0) + (b.isAllaModa ? 2 : 0) + (String(b.featured) === 'true' ? 1 : 0);
+                return scoreB - scoreA;
+            });
+
+            return `
+                <div class="category-section" style="margin-bottom: 40px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 10px;">
+                        <h3 style="color:#0b2545; font-size:1.35rem; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;">
+                            ${escapeHtml(group.title)}
+                        </h3>
+                        <span style="color:#0369a1; background:#e0f2fe; padding:4px 12px; border-radius:12px; font-size:0.82rem; font-weight:700;">
+                            ${sortedTours.length} ${sortedTours.length === 1 ? 'Tour' : 'Tour'}
+                        </span>
+                    </div>
+
+                    <div class="grid-wrapper">
+                        <button type="button" class="slider-nav-btn left" onclick="scorriSliderOrizzontale('slider-cat-${idx}', -310)" aria-label="Scorri a sinistra">❮</button>
+                        <div class="grid" id="slider-cat-${idx}">
+                            ${sortedTours.map(tour => renderTourCardHTML(tour)).join('')}
+                        </div>
+                        <button type="button" class="slider-nav-btn right" onclick="scorriSliderOrizzontale('slider-cat-${idx}', 310)" aria-label="Scorri a destra">❯</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } else {
+        // Categoria o sottocategoria specifica selezionata dal filtro o tendina
+        const filtrati = itinerariList.filter(i => itemMatchesCategory(i, categoria));
+        const meta = getCategoriaTitleAndIcon(categoria);
+
+        if (filtrati.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #64748b;">
+                    <h3>Nessun itinerario trovato per "${escapeHtml(meta.title)}"</h3>
+                    <p>Seleziona un'altra categoria per visualizzare i tour disponibili!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const sortedTours = [...filtrati].sort((a, b) => {
+            const scoreA = (a.isConsigliato ? 4 : 0) + (a.isAllaModa ? 2 : 0) + (String(a.featured) === 'true' ? 1 : 0);
+            const scoreB = (b.isConsigliato ? 4 : 0) + (b.isAllaModa ? 2 : 0) + (String(b.featured) === 'true' ? 1 : 0);
+            return scoreB - scoreA;
+        });
+
+        container.innerHTML = `
+            <div class="category-section" style="margin-bottom: 40px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 10px;">
+                    <h3 style="color:#0b2545; font-size:1.35rem; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;">
+                        ${meta.icon} ${escapeHtml(meta.title)}
+                    </h3>
+                    <span style="color:#0369a1; background:#e0f2fe; padding:4px 12px; border-radius:12px; font-size:0.82rem; font-weight:700;">
+                        ${sortedTours.length} ${sortedTours.length === 1 ? 'Tour' : 'Tour'}
+                    </span>
+                </div>
+
+                <div class="grid-wrapper">
+                    <button type="button" class="slider-nav-btn left" onclick="scorriSliderOrizzontale('slider-cat-single', -310)" aria-label="Scorri a sinistra">❮</button>
+                    <div class="grid" id="slider-cat-single">
+                        ${sortedTours.map(tour => renderTourCardHTML(tour)).join('')}
+                    </div>
+                    <button type="button" class="slider-nav-btn right" onclick="scorriSliderOrizzontale('slider-cat-single', 310)" aria-label="Scorri a destra">❯</button>
+                </div>
+            </div>
+        `;
+    }
 
     if (typeof aggiornaTraduzioneDinamica === 'function') {
         aggiornaTraduzioneDinamica();

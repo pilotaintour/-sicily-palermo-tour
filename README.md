@@ -70,7 +70,7 @@ L'obiettivo principale del progetto è stato quello di **abbattere le barriere f
 ```
 sicilypalermotour/
 ├── admin/               # Moduli e dashboard ad uso riservato
-├── categorie/           # Schede e filtri per categorie tour (Storia, Esperienze, Trasporti)
+├── categorie/           # Pagine dedicate per categorie tour (Tour Giornalieri, Tour di Più Giorni, Tour Esteri, Trasporti, Info)
 ├── itinerari/           # Pagine di dettaglio dei singoli itinerari turistici
 ├── recensioni/          # Modulo e testimonianze verificate dei clienti
 ├── whatsapp/            # Script ed asset per l'integrazione WhatsApp API

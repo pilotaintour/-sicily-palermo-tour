@@ -66,8 +66,13 @@ function logout() {
 }
 
 function verificaStatoAutenticazione() {
-    const savedEmail = (localStorage.getItem('spt_admin_email') || '').toLowerCase();
+    let savedEmail = (localStorage.getItem('spt_admin_email') || '').toLowerCase();
     const isLoggedIn = localStorage.getItem(AUTH_KEY_MAIN) === 'true';
+
+    if (isLoggedIn && !savedEmail) {
+        localStorage.setItem('spt_admin_email', AUTHORIZED_EMAIL_MAIN);
+        savedEmail = AUTHORIZED_EMAIL_MAIN.toLowerCase();
+    }
 
     const loginSection = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
@@ -89,6 +94,7 @@ function verificaStatoAutenticazione() {
         if (typeof caricaPrenotazioniAdmin === 'function') caricaPrenotazioniAdmin();
         if (typeof caricaSezioneTransazioni === 'function') caricaSezioneTransazioni();
         if (typeof caricaRecensioniAdmin === 'function') caricaRecensioniAdmin();
+        if (typeof caricaPromotersAdmin === 'function') caricaPromotersAdmin();
     } else {
         if (loginSection) loginSection.classList.remove('hidden');
         if (dashboardSection) dashboardSection.classList.add('hidden');
@@ -101,6 +107,7 @@ function mostraSezione(sezioneId, btnElement) {
     const sezioneItinerari = document.getElementById('sezione-itinerari');
     const sezionePrenotazioni = document.getElementById('sezione-prenotazioni');
     const sezioneTransazioni = document.getElementById('sezione-transazioni');
+    const sezionePromoters = document.getElementById('sezione-promoters');
     const sezioneImpostazioni = document.getElementById('sezione-impostazioni');
     const sezioneRecensioni = document.getElementById('sezione-recensioni');
     const tabs = document.querySelectorAll('.tab-btn');
@@ -114,6 +121,7 @@ function mostraSezione(sezioneId, btnElement) {
     if (sezioneItinerari) sezioneItinerari.classList.add('hidden');
     if (sezionePrenotazioni) sezionePrenotazioni.classList.add('hidden');
     if (sezioneTransazioni) sezioneTransazioni.classList.add('hidden');
+    if (sezionePromoters) sezionePromoters.classList.add('hidden');
     if (sezioneImpostazioni) sezioneImpostazioni.classList.add('hidden');
     if (sezioneRecensioni) sezioneRecensioni.classList.add('hidden');
 
@@ -126,6 +134,9 @@ function mostraSezione(sezioneId, btnElement) {
     } else if (sezioneId === 'sezione-transazioni') {
         if (sezioneTransazioni) sezioneTransazioni.classList.remove('hidden');
         if (typeof caricaSezioneTransazioni === 'function') caricaSezioneTransazioni();
+    } else if (sezioneId === 'sezione-promoters') {
+        if (sezionePromoters) sezionePromoters.classList.remove('hidden');
+        if (typeof caricaPromotersAdmin === 'function') caricaPromotersAdmin();
     } else if (sezioneId === 'sezione-impostazioni') {
         if (sezioneImpostazioni) sezioneImpostazioni.classList.remove('hidden');
     } else if (sezioneId === 'sezione-recensioni') {

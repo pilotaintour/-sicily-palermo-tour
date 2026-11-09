@@ -9,16 +9,9 @@ function pulisciVecchiItinerariDemo(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
         if (!item) return false;
-        const id = String(item.id || '');
         const title = String(item.title || '').toLowerCase().trim();
-        const price = String(item.price || '').toLowerCase().trim();
-        const desc = String(item.shortDesc || item.fullDesc || '').toLowerCase().trim();
-
-        if (id === '1' || id === '2' || id === '3') return false;
-        if (title.includes('dsf') || title.includes('sdf') || title.includes('fds') || title === 'test' || title === 'asdf' || title === 'prova') return false;
-        if (desc.includes('dsf') || desc.includes('sdf') || desc.includes('fds')) return false;
-        if (price.includes('dsf') || price.includes('sdf')) return false;
-
+        if (!title) return false;
+        if (title === 'dsf' || title === 'sdf' || title === 'fds' || title === 'asdf') return false;
         return true;
     });
 }
@@ -51,13 +44,15 @@ class CloudDatabaseManager {
         let heroPhotos = [];
         let bookings = [];
         let reviews = [];
+        let promoters = [];
         try { itinerari = JSON.parse(localStorage.getItem('spt_itineraries') || '[]'); } catch (e) {}
         try { heroPhotos = JSON.parse(localStorage.getItem('spt_hero_photos') || '[]'); } catch (e) {}
         try { bookings = JSON.parse(localStorage.getItem('spt_bookings') || '[]'); } catch (e) {}
         try { reviews = JSON.parse(localStorage.getItem('spt_recensioni') || '[]'); } catch (e) {}
+        try { promoters = JSON.parse(localStorage.getItem('spt_promoters') || '[]'); } catch (e) {}
 
         itinerari = pulisciVecchiItinerariDemo(itinerari);
-        return { itinerari, heroPhotos, bookings, reviews };
+        return { itinerari, heroPhotos, bookings, reviews, promoters };
     }
 
     async fetchTuttiDatiCloud() {
@@ -80,16 +75,18 @@ class CloudDatabaseManager {
                 const record = (await res.json()) || {};
 
                 // 1. Sincronizza Itinerari
-                if (record.itinerari && Array.isArray(record.itinerari)) {
+                if (record.itinerari && Array.isArray(record.itinerari) && record.itinerari.length > 0) {
                     const itinerariPuliti = pulisciVecchiItinerariDemo(record.itinerari);
-                    localStorage.setItem('spt_itineraries', JSON.stringify(itinerariPuliti));
+                    if (itinerariPuliti.length > 0) {
+                        localStorage.setItem('spt_itineraries', JSON.stringify(itinerariPuliti));
 
-                    if (typeof renderItinerariGrid === 'function') {
-                        const cat = typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti';
-                        renderItinerariGrid(itinerariPuliti, cat);
+                        if (typeof renderItinerariGrid === 'function') {
+                            const cat = typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti';
+                            renderItinerariGrid(itinerariPuliti, cat);
+                        }
+                        if (typeof caricaElencoItinerari === 'function') caricaElencoItinerari();
+                        if (window.consigliatiModaManager) window.consigliatiModaManager.renderSezioni();
                     }
-                    if (typeof caricaElencoItinerari === 'function') caricaElencoItinerari();
-                    if (window.consigliatiModaManager) window.consigliatiModaManager.renderSezioni();
                 }
 
                 // 2. Sincronizza Hero Photos (Foto Sfondo Copertina)
@@ -105,6 +102,7 @@ class CloudDatabaseManager {
 
                     if (typeof caricaPrenotazioniAdmin === 'function') caricaPrenotazioniAdmin();
                     if (typeof caricaSezioneTransazioni === 'function') caricaSezioneTransazioni();
+                    if (typeof caricaDashboardPartner === 'function') caricaDashboardPartner();
                 }
 
                 // 4. Sincronizza Recensioni
@@ -112,6 +110,13 @@ class CloudDatabaseManager {
                     localStorage.setItem('spt_recensioni', JSON.stringify(record.reviews));
                     if (typeof renderRecensioniGrid === 'function') renderRecensioniGrid();
                     if (typeof caricaRecensioniAdmin === 'function') caricaRecensioniAdmin();
+                }
+
+                // 5. Sincronizza Rivenditori / Promoters
+                if (record.promoters && Array.isArray(record.promoters)) {
+                    localStorage.setItem('spt_promoters', JSON.stringify(record.promoters));
+                    if (typeof caricaPromotersAdmin === 'function') caricaPromotersAdmin();
+                    if (typeof caricaDashboardPartner === 'function') caricaDashboardPartner();
                 }
 
                 return record;
@@ -122,14 +127,38 @@ class CloudDatabaseManager {
         return null;
     }
 
+    async fetchItinerariCloud() {
+        const record = await this.fetchTuttiDatiCloud();
+        if (record && record.itinerari && Array.isArray(record.itinerari) && record.itinerari.length > 0) {
+            return pulisciVecchiItinerariDemo(record.itinerari);
+        }
+        return this._getCurrentLocalData().itinerari;
+    }
+
+    async fetchRecensioniCloud() {
+        const record = await this.fetchTuttiDatiCloud();
+        if (record && record.reviews && Array.isArray(record.reviews) && record.reviews.length > 0) {
+            return record.reviews;
+        }
+        return this._getCurrentLocalData().reviews;
+    }
+
     async salvaTuttiDatiCloud(dataObj) {
+        if (!dataObj || typeof dataObj !== 'object') return false;
+
         this.isSaving = true;
         this.lastSaveTime = Date.now();
 
         try {
+            const patchPayload = {
+                updatedAt: new Date().toISOString()
+            };
+
             if (typeof dataObj.itinerari !== 'undefined') {
                 const cleanItinerari = pulisciVecchiItinerariDemo(dataObj.itinerari);
                 localStorage.setItem('spt_itineraries', JSON.stringify(cleanItinerari));
+                patchPayload.itinerari = cleanItinerari;
+
                 if (typeof renderItinerariGrid === 'function') {
                     const cat = typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti';
                     renderItinerariGrid(cleanItinerari, cat);
@@ -138,34 +167,33 @@ class CloudDatabaseManager {
             }
             if (typeof dataObj.heroPhotos !== 'undefined') {
                 localStorage.setItem('spt_hero_photos', JSON.stringify(dataObj.heroPhotos));
+                patchPayload.heroPhotos = dataObj.heroPhotos;
+
                 if (typeof avviaHeroBgSlider === 'function') avviaHeroBgSlider();
                 if (typeof caricaFotoHeroConfig === 'function') caricaFotoHeroConfig();
             }
             if (typeof dataObj.bookings !== 'undefined') {
                 localStorage.setItem('spt_bookings', JSON.stringify(dataObj.bookings));
+                patchPayload.bookings = dataObj.bookings;
             }
             if (typeof dataObj.reviews !== 'undefined') {
                 localStorage.setItem('spt_recensioni', JSON.stringify(dataObj.reviews));
+                patchPayload.reviews = dataObj.reviews;
+            }
+            if (typeof dataObj.promoters !== 'undefined') {
+                localStorage.setItem('spt_promoters', JSON.stringify(dataObj.promoters));
+                patchPayload.promoters = dataObj.promoters;
             }
 
             // Notifica tutti i componenti dell'applicazione dell'avvenuto aggiornamento dati
             window.dispatchEvent(new Event('spt_data_updated'));
 
-            const current = this._getCurrentLocalData();
-            const payload = {
-                itinerari: current.itinerari,
-                heroPhotos: current.heroPhotos,
-                bookings: current.bookings,
-                reviews: current.reviews,
-                updatedAt: new Date().toISOString()
-            };
-
             const res = await fetch(this.dbUrl, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(patchPayload)
             });
 
             if (res.ok) {

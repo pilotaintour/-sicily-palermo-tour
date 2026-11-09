@@ -193,16 +193,9 @@ function pulisciVecchiItinerariDemo(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
         if (!item) return false;
-        const id = String(item.id || '');
         const title = String(item.title || '').toLowerCase().trim();
-        const price = String(item.price || '').toLowerCase().trim();
-        const desc = String(item.shortDesc || item.fullDesc || '').toLowerCase().trim();
-
-        if (id === '1' || id === '2' || id === '3') return false;
-        if (title.includes('dsf') || title.includes('sdf') || title.includes('fds') || title === 'test' || title === 'asdf' || title === 'prova') return false;
-        if (desc.includes('dsf') || desc.includes('sdf') || desc.includes('fds')) return false;
-        if (price.includes('dsf') || price.includes('sdf')) return false;
-
+        if (!title) return false;
+        if (title === 'dsf' || title === 'sdf' || title === 'fds' || title === 'asdf') return false;
         return true;
     });
 }
@@ -228,17 +221,25 @@ async function saveItinerari(itinerari) {
 
     if (typeof caricaItinerari === 'function') {
         const cat = typeof categoriaSelezionata !== 'undefined' ? categoriaSelezionata : 'Tutti';
-        caricaItinerari(cat);
+        try {
+            caricaItinerari(cat);
+        } catch (e) {
+            console.warn("Avviso aggiornamento vista itinerari:", e);
+        }
     }
     if (window.consigliatiModaManager) {
         window.consigliatiModaManager.renderSezioni();
     }
     window.dispatchEvent(new Event('spt_data_updated'));
 
-    if (window.cloudAdmin && window.cloudAdmin.isAuthorized()) {
-        await window.cloudAdmin.salvaItinerariAdmin(cleanList);
-    } else if (window.cloudDB) {
-        await window.cloudDB.salvaItinerariCloud(cleanList);
+    try {
+        if (window.cloudAdmin && window.cloudAdmin.isAuthorized()) {
+            await window.cloudAdmin.salvaItinerariAdmin(cleanList);
+        } else if (window.cloudDB) {
+            await window.cloudDB.salvaItinerariCloud(cleanList);
+        }
+    } catch (err) {
+        console.error("Errore invio itinerari al Cloud:", err);
     }
 }
 
@@ -589,10 +590,10 @@ function normalizzaOrari(arr) {
     if (!arr || !Array.isArray(arr)) return [];
     return arr.map(item => {
         if (typeof item === 'string') {
-            return { time: item, capacity: 15 };
+            return { time: item, capacity: 53 };
         }
         if (item && typeof item === 'object' && item.time) {
-            return { time: item.time, capacity: parseInt(item.capacity, 10) || 15 };
+            return { time: item.time, capacity: parseInt(item.capacity, 10) || 53 };
         }
         return null;
     }).filter(Boolean).sort((a, b) => a.time.localeCompare(b.time));
