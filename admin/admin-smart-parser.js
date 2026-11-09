@@ -142,19 +142,16 @@ class AdminSmartParser {
             if (num) price = `${num.replace('.', ',')}€ a persona`;
         }
 
-        // 3. Estrazione Categoria
-        let category = 'Trasporti';
+        // 3. Estrazione Categoria (Tour Giornalieri, Tour di Più Giorni, Tour Esteri)
+        let category = 'Tour Giornalieri';
         const lowerText = fullText.toLowerCase();
-        if (lowerText.includes('food') || lowerText.includes('degustaz') || lowerText.includes('street')) {
-            category = 'Street Food';
-        } else if (lowerText.includes('mare') || lowerText.includes('spiaggia') || lowerText.includes('natura')) {
-            category = 'Mare e Natura';
-        } else if (lowerText.includes('storia') || lowerText.includes('monument') || lowerText.includes('museo')) {
-            category = 'Storia e Cultura';
-        } else if (lowerText.includes('bus') || lowerText.includes('partenz') || lowerText.includes('carnevale')) {
-            category = 'Trasporti';
+
+        if (/ester|volo|aeroporto|spagna|francia|grecia|londra|parigi|croazia|albania|egitto|malta|islanda|svizzera|germania|europa|internaz/i.test(lowerText)) {
+            category = 'Tour Esteri';
+        } else if (/più giorni|piu giorni|notti|notte|[2-9]\s*giorni|weekend|soggiorno|tour di più/i.test(lowerText)) {
+            category = 'Tour di Più Giorni';
         } else {
-            category = 'Esperienze e Tradizioni';
+            category = 'Tour Giornalieri';
         }
 
         // 4. Estrazione Data o Date Fisse Evento

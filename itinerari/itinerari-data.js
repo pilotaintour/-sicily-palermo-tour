@@ -226,9 +226,20 @@ function filtraCategoria(categoria, btnElement) {
 
     if (btnElement) {
         btnElement.classList.add('active');
+    } else {
+        buttons.forEach(btn => {
+            if (btn.textContent.includes(categoria) || (categoria === 'Tutti' && btn.textContent.includes('Tutti'))) {
+                btn.classList.add('active');
+            }
+        });
     }
 
     caricaItinerari(categoria);
+
+    const itinerariSec = document.getElementById('itinerari');
+    if (itinerariSec && !btnElement) {
+        itinerariSec.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 // Apre la finestra modale con le tappe e il carosello dell'itinerario

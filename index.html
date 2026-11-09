@@ -52,9 +52,9 @@
             <img src="logo.svg" alt="Sicily Palermo Tour Logo">
         </a>
         <ul class="main-nav-links">
-            <li><a href="categorie/storia-cultura.html">VIAGGI STORICI</a></li>
-            <li><a href="categorie/esperienze.html">VIAGGI ESPERIENZE</a></li>
-            <li><a href="categorie/trasporti.html">TRASPORTI &amp; TRANSFER</a></li>
+            <li><a href="#itinerari" onclick="filtraCategoria('Tour Giornalieri')">☀️ TOUR GIORNALIERI</a></li>
+            <li><a href="#itinerari" onclick="filtraCategoria('Tour di Più Giorni')">🧳 TOUR DI PIÙ GIORNI</a></li>
+            <li><a href="#itinerari" onclick="filtraCategoria('Tour Esteri')">✈️ TOUR ESTERI</a></li>
             <li><a href="#recensioni">RECENSIONI</a></li>
             <li><a href="#contatti">CONTATTI</a></li>
             <li><div id="google_translate_element" style="display:inline-block; vertical-align:middle;"></div></li>
@@ -90,11 +90,9 @@
             <!-- Filtri per Categoria -->
             <div class="filter-container">
                 <button class="filter-btn active" onclick="filtraCategoria('Tutti', this)">Tutti</button>
-                <a href="categorie/storia-cultura.html" class="filter-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">🏛️ Storia e Cultura</a>
-                <a href="categorie/street-food.html" class="filter-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">🥙 Street Food</a>
-                <a href="categorie/mare-natura.html" class="filter-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">🌊 Mare e Natura</a>
-                <a href="categorie/esperienze.html" class="filter-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">🎭 Esperienze</a>
-                <a href="categorie/trasporti.html" class="filter-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">🚌 Trasporti & Transfer</a>
+                <button class="filter-btn" onclick="filtraCategoria('Tour Giornalieri', this)">☀️ Tour Giornalieri</button>
+                <button class="filter-btn" onclick="filtraCategoria('Tour di Più Giorni', this)">🧳 Tour di Più Giorni</button>
+                <button class="filter-btn" onclick="filtraCategoria('Tour Esteri', this)">✈️ Tour Esteri</button>
             </div>
 
             <!-- Slider Orizzontale Itinerari Stile GetYourGuide -->
@@ -294,9 +292,9 @@
             <div class="footer-col">
                 <h4 class="footer-col-title">Viaggi</h4>
                 <ul class="footer-links-list">
-                    <li><a href="categorie/storia-cultura.html">Viaggi Storici</a></li>
-                    <li><a href="categorie/esperienze.html">Viaggi Esperienze</a></li>
-                    <li><a href="categorie/trasporti.html">Trasporti &amp; Transfer</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Tour Giornalieri')">☀️ Tour Giornalieri</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Tour di Più Giorni')">🧳 Tour di Più Giorni</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Tour Esteri')">✈️ Tour Esteri</a></li>
                 </ul>
             </div>
 
