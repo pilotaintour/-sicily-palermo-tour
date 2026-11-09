@@ -53,6 +53,84 @@
             background: #f1f5f9;
             color: #d97706;
         }
+
+        /* Stili Uniformi Pillole e Tendine Filtri */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .filter-btn {
+            height: 38px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+        }
+        .filter-btn:hover {
+            border-color: #f59e0b;
+            color: #d97706;
+        }
+        .filter-btn.active {
+            background-color: #0b2545;
+            color: #ffffff;
+            border-color: #0b2545;
+            box-shadow: 0 3px 10px rgba(11, 37, 69, 0.25);
+        }
+        .filter-select-dropdown {
+            height: 38px;
+            padding: 8px 30px 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+            outline: none;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+        }
+        .filter-select-dropdown:hover, .filter-select-dropdown:focus {
+            border-color: #f59e0b;
+            color: #d97706;
+        }
+        .filter-select-dropdown.active {
+            background-color: #0b2545;
+            color: #ffffff;
+            border-color: #0b2545;
+            box-shadow: 0 3px 10px rgba(11, 37, 69, 0.25);
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        }
+        .filter-select-dropdown option {
+            background-color: #ffffff;
+            color: #0b2545;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -108,7 +186,17 @@
                     <li><a href="#itinerari" onclick="filtraCategoria('Sardegna')">🌊 Sardegna</a></li>
                 </ul>
             </li>
-            <li><a href="#itinerari" onclick="filtraCategoria('Tour di Più Giorni')">🧳 TOUR DI PIÙ GIORNI</a></li>
+            <li class="nav-dropdown-item" style="position: relative;">
+                <a href="#itinerari" onclick="filtraCategoria('Tour di Più Giorni')" style="display: inline-flex; align-items: center; gap: 4px;">
+                    🧳 TOUR DI PIÙ GIORNI <span style="font-size: 0.7rem;">▼</span>
+                </a>
+                <ul class="nav-dropdown-menu">
+                    <li><a href="#itinerari" onclick="filtraCategoria('Tour di Più Giorni')">🧳 Tutti i Più Giorni</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('2 Giorni')">🧳 Weekend &amp; 2 Giorni</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('3 Giorni')">🧳 3 - 4 Giorni</a></li>
+                    <li><a href="#itinerari" onclick="filtraCategoria('Settimana')">🧳 5+ Giorni / Settimana</a></li>
+                </ul>
+            </li>
             <li class="nav-dropdown-item" style="position: relative;">
                 <a href="#itinerari" onclick="filtraCategoria('Tour Esteri')" style="display: inline-flex; align-items: center; gap: 4px;">
                     ✈️ TOUR ESTERI <span style="font-size: 0.7rem;">▼</span>
@@ -158,12 +246,12 @@
             </div>
 
             <!-- Filtri per Categoria -->
-            <div class="filter-container" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 25px;">
+            <div class="filter-container">
                 <button class="filter-btn active" onclick="filtraCategoria('Tutti', this)">Tutti</button>
 
                 <!-- Select a tendina per Tour Giornalieri / Regioni Italia -->
-                <select class="filter-select-dropdown" aria-label="Seleziona Regione per Tour Giornalieri" onchange="filtraCategoria(this.value, this)" style="padding: 10px 16px; border: 1.5px solid #cbd5e1; border-radius: 25px; font-weight: bold; background: #ffffff; color: #0b2545; font-size: 0.9rem; cursor: pointer; font-family: inherit; box-shadow: 0 2px 6px rgba(0,0,0,0.05); outline: none;">
-                    <option value="Tour Giornalieri">☀️ Tour Giornalieri (Tutte le Regioni) ▼</option>
+                <select class="filter-select-dropdown" aria-label="Seleziona Regione per Tour Giornalieri" onchange="filtraCategoria(this.value, this)">
+                    <option value="Tour Giornalieri">☀️ Tour Giornalieri (Tutti) ▼</option>
                     <option value="Sicilia">🏝️ Sicilia</option>
                     <option value="Campania">🌋 Campania</option>
                     <option value="Lazio">🏛️ Lazio</option>
@@ -174,11 +262,17 @@
                     <option value="Sardegna">🌊 Sardegna</option>
                 </select>
 
-                <button class="filter-btn" onclick="filtraCategoria('Tour di Più Giorni', this)">🧳 Tour di Più Giorni</button>
+                <!-- Select a tendina per Tour di Più Giorni -->
+                <select class="filter-select-dropdown" aria-label="Seleziona Durata per Tour di Più Giorni" onchange="filtraCategoria(this.value, this)">
+                    <option value="Tour di Più Giorni">🧳 Tour di Più Giorni (Tutti) ▼</option>
+                    <option value="2 Giorni">🧳 Weekend &amp; 2 Giorni</option>
+                    <option value="3 Giorni">🧳 3 - 4 Giorni</option>
+                    <option value="Settimana">🧳 5+ Giorni / Settimana</option>
+                </select>
 
                 <!-- Select a tendina per Tour Esteri / Continenti -->
-                <select class="filter-select-dropdown" aria-label="Seleziona Continente per Tour Esteri" onchange="filtraCategoria(this.value, this)" style="padding: 10px 16px; border: 1.5px solid #cbd5e1; border-radius: 25px; font-weight: bold; background: #ffffff; color: #0b2545; font-size: 0.9rem; cursor: pointer; font-family: inherit; box-shadow: 0 2px 6px rgba(0,0,0,0.05); outline: none;">
-                    <option value="Tour Esteri">✈️ Tour Esteri (Tutti i Continenti) ▼</option>
+                <select class="filter-select-dropdown" aria-label="Seleziona Continente per Tour Esteri" onchange="filtraCategoria(this.value, this)">
+                    <option value="Tour Esteri">✈️ Tour Esteri (Tutti) ▼</option>
                     <option value="Europa">🇪🇺 Europa</option>
                     <option value="USA">🇺🇸 USA &amp; Nord America</option>
                     <option value="America del Sud">🇧🇷 America del Sud</option>

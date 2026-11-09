@@ -177,15 +177,29 @@ function renderItinerariGrid(itinerariList, categoria) {
     const grid = document.getElementById('itinerari-grid');
     if (!grid) return;
 
-    let filtrati = categoria === 'Tutti'
-        ? itinerariList
-        : itinerariList.filter(i => i.category === categoria);
+    let filtrati = [];
+    if (categoria === 'Tutti') {
+        filtrati = itinerariList;
+    } else if (categoria === 'Tour Giornalieri') {
+        filtrati = itinerariList.filter(i => String(i.category || '').startsWith('Tour Giornalieri'));
+    } else if (categoria === 'Tour di Più Giorni') {
+        filtrati = itinerariList.filter(i => String(i.category || '').toLowerCase().includes('più giorni') || String(i.category || '').toLowerCase().includes('piu giorni'));
+    } else if (categoria === 'Tour Esteri') {
+        filtrati = itinerariList.filter(i => String(i.category || '').startsWith('Tour Esteri'));
+    } else {
+        const catLower = categoria.toLowerCase();
+        filtrati = itinerariList.filter(i => (
+            String(i.category || '').toLowerCase().includes(catLower) ||
+            String(i.duration || '').toLowerCase().includes(catLower) ||
+            String(i.title || '').toLowerCase().includes(catLower)
+        ));
+    }
 
     if (filtrati.length === 0) {
         grid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
-                <h3>Nessun itinerario trovato per la categoria "${escapeHtml(categoria)}"</h3>
-                <p>Prova a selezionare una categoria diversa o torna tra poco!</p>
+                <h3>Nessun itinerario trovato per "${escapeHtml(categoria)}"</h3>
+                <p>Prova a selezionare un'altra categoria o durata!</p>
             </div>
         `;
         return;
@@ -227,17 +241,22 @@ function renderItinerariGrid(itinerariList, categoria) {
     }
 }
 
-// Gestione dei bottoni filtro categoria
+// Gestione dei bottoni e select filtro categoria
 function filtraCategoria(categoria, btnElement) {
-    const buttons = document.querySelectorAll('.filter-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
+    const allFilters = document.querySelectorAll('.filter-btn, .filter-select-dropdown');
+    allFilters.forEach(el => {
+        el.classList.remove('active');
+        if (el.tagName === 'SELECT' && el !== btnElement) {
+            el.selectedIndex = 0;
+        }
+    });
 
     if (btnElement) {
         btnElement.classList.add('active');
     } else {
-        buttons.forEach(btn => {
-            if (btn.textContent.includes(categoria) || (categoria === 'Tutti' && btn.textContent.includes('Tutti'))) {
-                btn.classList.add('active');
+        allFilters.forEach(el => {
+            if (el.textContent.includes(categoria) || (categoria === 'Tutti' && el.textContent.includes('Tutti'))) {
+                el.classList.add('active');
             }
         });
     }
@@ -245,7 +264,7 @@ function filtraCategoria(categoria, btnElement) {
     caricaItinerari(categoria);
 
     const itinerariSec = document.getElementById('itinerari');
-    if (itinerariSec && !btnElement) {
+    if (itinerariSec && (!btnElement || (btnElement.tagName !== 'BUTTON' && btnElement.tagName !== 'SELECT'))) {
         itinerariSec.scrollIntoView({ behavior: 'smooth' });
     }
 }
