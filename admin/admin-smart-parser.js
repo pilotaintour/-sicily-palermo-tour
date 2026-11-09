@@ -142,12 +142,27 @@ class AdminSmartParser {
             if (num) price = `${num.replace('.', ',')}€ a persona`;
         }
 
-        // 3. Estrazione Categoria e Regione Italia per i Tour Giornalieri
+        // 3. Estrazione Categoria, Regioni e Continenti
         let category = 'Tour Giornalieri (Sicilia)';
         const lowerText = fullText.toLowerCase();
 
-        if (/ester|volo|aeroporto|spagna|francia|grecia|londra|parigi|croazia|albania|egitto|malta|islanda|svizzera|germania|europa|internaz/i.test(lowerText)) {
-            category = 'Tour Esteri';
+        if (/ester|volo|aeroporto|spagna|francia|grecia|londra|parigi|croazia|albania|egitto|malta|islanda|svizzera|germania|europa|internaz|usa|stati uniti|america|giappone|asia|africa|dubai/i.test(lowerText)) {
+            // Rileva continente specifico per Tour Esteri
+            if (/usa|stati uniti|new york|miami|los angeles|california|canada|mexico|messico|nord america/i.test(lowerText)) {
+                category = 'Tour Esteri (USA e Nord America)';
+            } else if (/brasile|argentina|perù|peru|cile|colombia|america del sud|sud america|latina/i.test(lowerText)) {
+                category = 'Tour Esteri (America del Sud)';
+            } else if (/giappone|tokyo|cina|beijing|thailandia|bangkok|vietnam|india|indonesia|bali|maldive|asia/i.test(lowerText)) {
+                category = 'Tour Esteri (Asia)';
+            } else if (/marocco|marrakech|egitto|sharm|cairo|kenya|tanzania|zanzibar|sud africa|madagascar|tunisia|africa/i.test(lowerText)) {
+                category = 'Tour Esteri (Africa)';
+            } else if (/dubai|emirati|giordania|petra|qatar|oman|turchia|istanbul|cappadocia|medio oriente/i.test(lowerText)) {
+                category = 'Tour Esteri (Medio Oriente)';
+            } else if (/australia|sydney|nuova zelanda|oceania/i.test(lowerText)) {
+                category = 'Tour Esteri (Oceania e Australia)';
+            } else {
+                category = 'Tour Esteri (Europa)';
+            }
         } else if (/più giorni|piu giorni|notti|notte|[2-9]\s*giorni|weekend|soggiorno|tour di più/i.test(lowerText)) {
             category = 'Tour di Più Giorni';
         } else if (/transfer|navetta|taxi|noleggio|shuttle|aeroporto transfer|bus transfer/i.test(lowerText)) {
