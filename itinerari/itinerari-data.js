@@ -177,7 +177,7 @@ function renderItinerariGrid(itinerariList, categoria) {
     const grid = document.getElementById('itinerari-grid');
     if (!grid) return;
 
-    const filtrati = categoria === 'Tutti'
+    let filtrati = categoria === 'Tutti'
         ? itinerariList
         : itinerariList.filter(i => i.category === categoria);
 
@@ -191,21 +191,29 @@ function renderItinerariGrid(itinerariList, categoria) {
         return;
     }
 
+    // Ordina gli itinerari per mostrare prima i Consigliati, Trending ed In Evidenza
+    filtrati = [...filtrati].sort((a, b) => {
+        const scoreA = (a.isConsigliato ? 4 : 0) + (a.isAllaModa ? 2 : 0) + (String(a.featured) === 'true' ? 1 : 0);
+        const scoreB = (b.isConsigliato ? 4 : 0) + (b.isAllaModa ? 2 : 0) + (String(b.featured) === 'true' ? 1 : 0);
+        return scoreB - scoreA;
+    });
+
     grid.innerHTML = filtrati.map(tour => `
         <div class="card">
             ${generaHtmlCarosello(tour, 'card')}
             <div class="card-content">
                 <div class="badges-row">
-                    <span class="badge">${escapeHtml(tour.category)}</span>
-                    ${tour.singleFixedDate ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:800;">📌 Evento: ${escapeHtml(tour.singleFixedDate)}</span>` : ''}
-                    ${tour.images && tour.images.length > 1 ? `<span class="badge" style="background:#e0f2fe; color:#0369a1;">📷 ${tour.images.length} Foto</span>` : ''}
-                    ${String(tour.featured) === 'true' ? '<span class="badge badge-star">⭐ In Evidenza</span>' : ''}
+                    <span class="badge">${escapeHtml(tour.category || 'Tour')}</span>
+                    ${tour.isConsigliato ? '<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:800;">⭐ Consigliato</span>' : ''}
+                    ${tour.isAllaModa ? '<span class="badge" style="background:#fee2e2; color:#991b1b; font-weight:800;">🔥 Trending</span>' : ''}
+                    ${tour.singleFixedDate ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:800;">📌 Evento: ${escapeHtml(tour.singleFixedDate)}</span>` : ''}
+                    ${tour.images && tour.images.length > 1 ? `<span class="badge" style="background:#f1f5f9; color:#475569;">📷 ${tour.images.length} Foto</span>` : ''}
                 </div>
                 <h3>${escapeHtml(tour.title)}</h3>
                 <p class="card-desc">${escapeHtml(tour.shortDesc || tour.shortDescription || tour.fullDescription || '')}</p>
                 <div class="card-chips">
-                    <span>⏱️ ${escapeHtml(tour.duration || 'Flessibile')}</span>
-                    <span>💰 ${escapeHtml(tour.price || 'Su richiesta')}</span>
+                    <span>⏱️ ${escapeHtml(tour.duration || '1 Giorno')}</span>
+                    <span>💰 ${escapeHtml(tour.price || 'Da 25€')}</span>
                 </div>
                 <div class="card-footer">
                     <button type="button" class="btn-tour" onclick="apriDettagliModal('${tour.id}')">🎟️ Dettagli &amp; Prenota</button>
