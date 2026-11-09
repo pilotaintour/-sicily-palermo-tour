@@ -16,7 +16,8 @@ class TourCalendar {
         this.singleFixedDate = options.singleFixedDate || null;
 
         if (this.singleFixedDate) {
-            const parts = this.singleFixedDate.split('-');
+            const firstDateStr = String(this.singleFixedDate).split(',')[0].trim();
+            const parts = firstDateStr.split('-');
             if (parts.length === 3) {
                 this.currentDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                 this.selectedDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
@@ -117,7 +118,8 @@ class TourCalendar {
 
             let isDisabled = false;
             if (this.singleFixedDate) {
-                isDisabled = (dateStr !== this.singleFixedDate);
+                const datesList = String(this.singleFixedDate).split(',').map(d => d.trim()).filter(Boolean);
+                isDisabled = !datesList.includes(dateStr);
             } else {
                 const isPast = dateObj.getTime() < today.getTime();
                 const isClosed = this.closedDays.includes(dayOfWeek);
@@ -131,8 +133,6 @@ class TourCalendar {
             if (isDisabled) classes.push('day-disabled');
             if (isToday) classes.push('day-today');
             if (isSelected) classes.push('day-selected');
-
-            const dateStr = this.formatDateISO(dateObj);
 
             html += `
                 <div class="${classes.join(' ')}"
