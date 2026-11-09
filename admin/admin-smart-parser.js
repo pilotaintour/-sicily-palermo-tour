@@ -142,7 +142,7 @@ class AdminSmartParser {
             if (num) price = `${num.replace('.', ',')}€ a persona`;
         }
 
-        // 3. Estrazione Categoria (Tour Giornalieri, Tour di Più Giorni, Tour Esteri)
+        // 3. Estrazione Categoria (Tour Giornalieri, Tour di Più Giorni, Tour Esteri, Trasporti)
         let category = 'Tour Giornalieri';
         const lowerText = fullText.toLowerCase();
 
@@ -150,6 +150,8 @@ class AdminSmartParser {
             category = 'Tour Esteri';
         } else if (/più giorni|piu giorni|notti|notte|[2-9]\s*giorni|weekend|soggiorno|tour di più/i.test(lowerText)) {
             category = 'Tour di Più Giorni';
+        } else if (/transfer|navetta|taxi|noleggio|shuttle|aeroporto transfer|bus transfer/i.test(lowerText)) {
+            category = 'Trasporti';
         } else {
             category = 'Tour Giornalieri';
         }
