@@ -78,7 +78,12 @@ class Step4Conferma {
                     res = await window.stripePayment.processaPreAutorizzazione(
                         this.lastData ? this.lastData.total : '25.00',
                         this.lastData ? this.lastData.customerName : 'Cliente',
-                        this.lastData ? this.lastData.customerEmail : ''
+                        this.lastData ? this.lastData.customerEmail : '',
+                        {
+                            stripeConnectAccountId: this.lastData ? (this.lastData.stripeConnectAccountId || '') : '',
+                            commissionAmount: this.lastData ? (this.lastData.commissionAmount || 0) : 0,
+                            promoCode: this.lastData ? (this.lastData.promoCode || '') : ''
+                        }
                     );
                 } else {
                     res = { success: true, paymentIntentId: 'pi_hold_' + Math.floor(100000 + Math.random() * 900000) };
@@ -175,7 +180,10 @@ class Step4Conferma {
                     </button>
                 </div>
                 <div id="step4-promo-msg" style="font-size: 0.85rem; margin-top: 6px; font-weight: bold;">
-                    ${data.promoValid ? `<span style="color:#166534;">✅ Codice "${data.promoCode}" applicato! Sconto del ${data.discountPercent || 10}% attivato (-€${data.discountAmount}).</span>` : ''}
+                    ${data.promoValid ? `
+                        <span style="color:#166534; display: block;">✅ Codice "${data.promoCode}" applicato! Sconto del ${data.discountPercent || 10}% attivato (-€${data.discountAmount}).</span>
+                        ${data.stripeConnectSplit ? `<span style="color:#0284c7; font-size:0.8rem; display:block; margin-top:3px;">⚡ Split Payment Stripe Connect attivo alla fonte per il partner.</span>` : ''}
+                    ` : ''}
                 </div>
             </div>
 

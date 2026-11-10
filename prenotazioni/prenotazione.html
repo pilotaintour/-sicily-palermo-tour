@@ -297,6 +297,8 @@
                         this.bookingData.commissionPercent = promoter.commissionPercent || 10;
                         this.bookingData.promoterId = promoter.id;
                         this.bookingData.promoterName = promoter.name;
+                        this.bookingData.stripeConnectAccountId = promoter.stripeAccountId || '';
+                        this.bookingData.stripeConnectSplit = !!(promoter.stripeAccountId && promoter.stripeAccountId.startsWith('acct_'));
                     }
                 }
 

@@ -60,6 +60,11 @@ function caricaPromotersAdmin() {
             }
         });
 
+        const hasStripe = p.stripeAccountId && p.stripeAccountId.startsWith('acct_');
+        const stripeStatusBadge = hasStripe
+            ? `<span style="font-size: 0.78rem; font-weight: 800; color: #166534; background: #dcfce7; padding: 2px 8px; border-radius: 12px; border: 1px solid #bbf7d0;">⚡ Stripe Connect Split Active (${p.stripeAccountId})</span>`
+            : `<span style="font-size: 0.78rem; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 12px;">🏦 Liquidazione IBAN</span>`;
+
         html += `
             <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
@@ -67,8 +72,9 @@ function caricaPromotersAdmin() {
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <h3 style="color: #0b2545; font-size: 1.15rem; margin: 0;">🏢 ${p.name}</h3>
                             <span style="font-family: monospace; font-size: 1.1rem; font-weight: 800; color: #0369a1; background: #e0f2fe; padding: 3px 10px; border-radius: 6px; border: 1.5px dashed #0284c7;">${p.code}</span>
+                            ${stripeStatusBadge}
                         </div>
-                        <p style="font-size: 0.88rem; color: #64748b; margin-top: 4px;">
+                        <p style="font-size: 0.88rem; color: #64748b; margin-top: 4px; margin-bottom: 6px;">
                             📧 Email: <strong>${p.email}</strong> | 🔑 Pass: <code>${p.password || 'Partner123!'}</code> | 📞 Tel: ${p.phone || 'N.D.'}
                         </p>
                     </div>
@@ -83,6 +89,17 @@ function caricaPromotersAdmin() {
                             🗑️ Elimina
                         </button>
                     </div>
+                </div>
+
+                <!-- Box IBAN Accredito Partner -->
+                <div style="background: #f0f9ff; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #bae6fd; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <span style="font-size: 0.88rem; color: #0369a1; font-weight: 800;">
+                        🏦 IBAN Accredito: <code style="font-family: monospace; font-size: 0.95rem; background: #ffffff; padding: 3px 8px; border-radius: 6px; border: 1px solid #cbd5e1; color: #0b2545;">${p.iban || 'Non ancora inserito'}</code>
+                    </span>
+                    <button onclick="modificaIbanPartnerAdmin('${p.id}')" class="btn-primary btn-small" style="background: #0284c7; padding: 5px 14px; font-size: 0.82rem; font-weight: bold;">
+                        ✏️ Imposta / Modifica IBAN
+                    </button>
+                </div>
                 </div>
 
                 <!-- Griglia Riepilogo Guadagni Rivenditore -->
@@ -115,7 +132,7 @@ function caricaPromotersAdmin() {
     listContainer.innerHTML = html;
 }
 
-function salvaNuovoPromoterAdmin(event) {
+async function salvaNuovoPromoterAdmin(event) {
     if (event) event.preventDefault();
 
     const nameEl = document.getElementById('new-promoter-name');
@@ -125,6 +142,8 @@ function salvaNuovoPromoterAdmin(event) {
     const discEl = document.getElementById('new-promoter-discount');
     const commEl = document.getElementById('new-promoter-commission');
     const phoneEl = document.getElementById('new-promoter-phone');
+    const ibanEl = document.getElementById('new-promoter-iban');
+    const stripeEl = document.getElementById('new-promoter-stripe');
 
     if (!nameEl || !codeEl || !emailEl) return;
 
@@ -135,6 +154,8 @@ function salvaNuovoPromoterAdmin(event) {
     const discountPercent = parseFloat(discEl ? discEl.value : 10) || 10;
     const commissionPercent = parseFloat(commEl ? commEl.value : 10) || 10;
     const phone = phoneEl ? phoneEl.value.trim() : '';
+    const iban = ibanEl ? ibanEl.value.trim().toUpperCase() : '';
+    let stripeAccountId = stripeEl ? stripeEl.value.trim() : '';
 
     if (!name || !code || !email) {
         alert('⚠️ Per favore inserisci Nome, Codice Promo ed Email per creare il rivenditore.');
@@ -150,6 +171,22 @@ function salvaNuovoPromoterAdmin(event) {
         return;
     }
 
+    // Se è stato inserito un IBAN e non c'è un ID Stripe, collega l'IBAN in automatico con Stripe Connect
+    if (iban && iban.length >= 15 && (!stripeAccountId || !stripeAccountId.startsWith('acct_')) && window.stripePayment) {
+        try {
+            const autoAccountId = await window.stripePayment.creaAccountStripeConnectDaIBAN({
+                iban: iban,
+                email: email,
+                name: name
+            });
+            if (autoAccountId) {
+                stripeAccountId = autoAccountId;
+            }
+        } catch (e) {
+            console.warn("Auto-registrazione IBAN Stripe Connect non completata:", e);
+        }
+    }
+
     const newPromoter = {
         id: 'prom_' + Date.now(),
         code: code,
@@ -159,6 +196,8 @@ function salvaNuovoPromoterAdmin(event) {
         discountPercent: discountPercent,
         commissionPercent: commissionPercent,
         phone: phone,
+        iban: iban,
+        stripeAccountId: stripeAccountId,
         createdAt: new Date().toLocaleDateString('it-IT'),
         status: 'active'
     };
@@ -179,7 +218,57 @@ function salvaNuovoPromoterAdmin(event) {
     emailEl.value = '';
     if (passEl) passEl.value = '';
     if (phoneEl) phoneEl.value = '';
+    if (ibanEl) ibanEl.value = '';
+    if (stripeEl) stripeEl.value = '';
 
+    caricaPromotersAdmin();
+}
+
+async function modificaIbanPartnerAdmin(id) {
+    if (!id) return;
+    let promoters = typeof getPromoters === 'function' ? getPromoters() : [];
+    const promoter = promoters.find(p => String(p.id) === String(id));
+    if (!promoter) return;
+
+    const nuovoIban = prompt(`Inserisci o modifica l'IBAN per "${promoter.name}":`, promoter.iban || 'IT');
+    if (nuovoIban === null) return; // Annullato
+
+    const ibanClean = nuovoIban.trim().toUpperCase();
+    let stripeAccountId = promoter.stripeAccountId || '';
+
+    if (ibanClean && ibanClean.length >= 15 && (!stripeAccountId || !stripeAccountId.startsWith('acct_')) && window.stripePayment) {
+        try {
+            const autoAccountId = await window.stripePayment.creaAccountStripeConnectDaIBAN({
+                iban: ibanClean,
+                email: promoter.email,
+                name: promoter.name
+            });
+            if (autoAccountId) {
+                stripeAccountId = autoAccountId;
+            }
+        } catch (e) {
+            console.warn("Auto-registrazione IBAN Stripe Connect non completata:", e);
+        }
+    }
+
+    promoters = promoters.map(p => {
+        if (String(p.id) === String(id)) {
+            return {
+                ...p,
+                iban: ibanClean,
+                stripeAccountId: stripeAccountId
+            };
+        }
+        return p;
+    });
+
+    if (typeof savePromoters === 'function') {
+        savePromoters(promoters);
+    } else {
+        localStorage.setItem('spt_promoters', JSON.stringify(promoters));
+    }
+
+    alert(`✅ IBAN aggiornato per "${promoter.name}"!`);
     caricaPromotersAdmin();
 }
 
@@ -233,5 +322,6 @@ function eliminaPromoterAdmin(id) {
 // Esponi le funzioni globalmente
 window.caricaPromotersAdmin = caricaPromotersAdmin;
 window.salvaNuovoPromoterAdmin = salvaNuovoPromoterAdmin;
+window.modificaIbanPartnerAdmin = modificaIbanPartnerAdmin;
 window.liquidaTutteCommissioniPartner = liquidaTutteCommissioniPartner;
 window.eliminaPromoterAdmin = eliminaPromoterAdmin;

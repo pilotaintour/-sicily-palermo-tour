@@ -122,6 +122,55 @@
                 </div>
             </div>
 
+            <!-- Box Coordinate Bancarie & Payout IBAN / Stripe Connect -->
+            <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1.5px solid #0284c7;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="color: #0369a1; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            🏦 Coordinate Bancarie &amp; Stripe Connect (Split Payment)
+                        </h3>
+                        <p style="color: #0369a1; font-size: 0.88rem; margin-top: 4px; margin-bottom: 0;">
+                            Inserisci le tue coordinate bancarie per la liquidazione o il tuo <strong>Stripe Connect Account ID</strong> per l'accredito automatico immediato alla fonte.
+                        </p>
+                    </div>
+                    <div id="partner-stripe-status-badge">
+                        <!-- Popolato via JS -->
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.7); border: 1px solid #bae6fd; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 0.83rem; color: #0369a1;">
+                    ⚡ <strong>Split Payment Automatico (Stripe Connect):</strong> Se inserisci il tuo ID Account Stripe Connect (es. <code>acct_1N...</code>), la tua commissione verrà trasferita <strong>automaticamente ed all'istante</strong> sul tuo conto Stripe ad ogni prenotazione effettuata con il tuo codice promozionale (Zero tasse per l'agenzia sulla tua quota in conformità DAC7 EU).
+                </div>
+
+                <form id="formCoordinatePartner" onsubmit="salvaCoordinateBancariePartner(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: end;">
+                    <div>
+                        <label for="partner-stripe-account-input" style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">⚡ Stripe Connect Account ID (Split Payment)</label>
+                        <input type="text" id="partner-stripe-account-input" placeholder="Es. acct_1NXXXXXXXXXXXXXX" style="width: 100%; padding: 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-family: monospace; font-weight: bold;">
+                    </div>
+                    <div>
+                        <label for="partner-iban-input" style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">IBAN Bancario / Numero Conto *</label>
+                        <input type="text" id="partner-iban-input" placeholder="IT60X0000000000000000000000" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-weight: bold; text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label for="partner-bank-holder-input" style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Intestatario Conto / Ragione Sociale *</label>
+                        <input type="text" id="partner-bank-holder-input" placeholder="Es. Hotel Plaza S.r.l." style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label for="partner-vat-input" style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Partita IVA / Codice Fiscale</label>
+                        <input type="text" id="partner-vat-input" placeholder="Es. 01234567890" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; text-transform: uppercase;">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label for="partner-bank-notes-input" style="display: block; font-weight: 700; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Note o Metodo Alternativo (PayPal / Satispay)</label>
+                        <input type="text" id="partner-bank-notes-input" placeholder="Es. Pagamento via PayPal a hotel@example.com" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+                    <div style="grid-column: 1 / -1; text-align: right; margin-top: 4px;">
+                        <button type="submit" class="btn-primary" style="background: #0284c7; padding: 11px 24px; font-weight: bold;">
+                            💾 Salva Coordinate &amp; Configurazione Stripe Connect
+                        </button>
+                    </div>
+                </form>
+            </div>
+
             <!-- Tabella Storico Prenotazioni col Codice Partner -->
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
@@ -157,7 +206,7 @@
     </main>
 
     <!-- Script Sincronizzazione Cloud Database & Logica Partner -->
-    <script src="../cloud/cloud-db.js?v=35"></script>
-    <script src="partner.js?v=35"></script>
+    <script src="../cloud/cloud-db.js?v=100"></script>
+    <script src="partner.js?v=100"></script>
 </body>
 </html>

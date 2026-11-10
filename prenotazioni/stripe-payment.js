@@ -361,12 +361,24 @@ class StripePaymentManager {
         }
     }
 
-    // Esegue la Pre-Autorizzazione Reale (Blocco Importo in Sospeso su Stripe con capture_method=manual)
-    async processaPreAutorizzazione(totaleEuro, customerName, customerEmail) {
+    // Esegue la Pre-Autorizzazione Reale (Blocco Importo in Sospeso su Stripe con capture_method=manual e Split Payment Connect)
+    async processaPreAutorizzazione(totaleEuro, customerName, customerEmail, options = {}) {
         const errorElement = document.getElementById('stripe-card-errors');
         if (errorElement) {
             errorElement.textContent = '';
             errorElement.style.display = 'none';
+        }
+
+        let stripeConnectAccountId = '';
+        let commissionAmount = 0;
+        let promoCode = '';
+
+        if (typeof options === 'object' && options !== null) {
+            stripeConnectAccountId = options.stripeConnectAccountId || options.stripeAccountId || '';
+            commissionAmount = parseFloat(options.commissionAmount || 0) || 0;
+            promoCode = options.promoCode || '';
+        } else if (typeof options === 'string') {
+            stripeConnectAccountId = options;
         }
 
         const radioPaypal = document.querySelector('input[name="payment_method"][value="paypal"]');
@@ -422,6 +434,20 @@ class StripePaymentManager {
                     params.append('return_url', returnUrl);
                     params.append('description', `Pre-Autorizzazione Tour Palermo - ${cardholderName} (${customerEmail || 'Cliente'})`);
 
+                    if (promoCode) {
+                        params.append('metadata[promo_code]', promoCode);
+                    }
+
+                    // Configurazione Split Payment Stripe Connect (Transfer Data)
+                    if (stripeConnectAccountId && stripeConnectAccountId.startsWith('acct_') && commissionAmount > 0) {
+                        const commCents = Math.round(commissionAmount * 100);
+                        params.append('transfer_data[destination]', stripeConnectAccountId);
+                        params.append('transfer_data[amount]', commCents.toString());
+                        params.append('metadata[stripe_connect_split]', 'true');
+                        params.append('metadata[partner_commission_cents]', commCents.toString());
+                        console.log(`⚡ Stripe Connect Split Payment configurato: ${commissionAmount}€ (${commCents} cents) verso ${stripeConnectAccountId}`);
+                    }
+
                     const res = await fetch('https://api.stripe.com/v1/payment_intents', {
                         method: 'POST',
                         headers: {
@@ -438,6 +464,7 @@ class StripePaymentManager {
                             success: true,
                             paymentIntentId: intent.id,
                             status: 'Pre-Autorizzato in Sospeso (Stripe)',
+                            stripeConnectSplit: !!(stripeConnectAccountId && stripeConnectAccountId.startsWith('acct_')),
                             message: 'Importo bloccato in sospeso con successo sulla carta del cliente!'
                         };
                     } else {
@@ -455,6 +482,7 @@ class StripePaymentManager {
                         success: true,
                         paymentIntentId: 'pi_hold_' + paymentMethodId.substring(3),
                         status: 'Pre-Autorizzato in Sospeso (Carta)',
+                        stripeConnectSplit: !!(stripeConnectAccountId && stripeConnectAccountId.startsWith('acct_')),
                         message: 'Importo registrato in sospeso sulla carta del cliente.'
                     };
                 }
@@ -499,6 +527,18 @@ class StripePaymentManager {
                 params.append('capture_method', 'manual');
                 params.append('return_url', returnUrl);
                 params.append('description', `Pre-Autorizzazione Tour Palermo - ${cardholderName} (${customerEmail || 'Cliente'})`);
+
+                if (promoCode) {
+                    params.append('metadata[promo_code]', promoCode);
+                }
+
+                if (stripeConnectAccountId && stripeConnectAccountId.startsWith('acct_') && commissionAmount > 0) {
+                    const commCents = Math.round(commissionAmount * 100);
+                    params.append('transfer_data[destination]', stripeConnectAccountId);
+                    params.append('transfer_data[amount]', commCents.toString());
+                    params.append('metadata[stripe_connect_split]', 'true');
+                    params.append('metadata[partner_commission_cents]', commCents.toString());
+                }
 
                 const res = await fetch('https://api.stripe.com/v1/payment_intents', {
                     method: 'POST',
@@ -606,6 +646,47 @@ class StripePaymentManager {
         }
         alert(`⚠️ Pre-autorizzazione per la prenotazione ${intentId} annullata. La somma in sospeso è stata sbloccata al 100% sulla carta del cliente senza alcuna commissione.`);
         return true;
+    }
+
+    // Crea ed unisce automaticamente un account Stripe Connect per inviare i bonifici SEPA all'IBAN del partner
+    async creaAccountStripeConnectDaIBAN(partnerData = {}) {
+        const sk = this.getSecretKey();
+        const iban = (partnerData.iban || '').replace(/\s+/g, '').toUpperCase();
+        if (!sk || !sk.startsWith('sk_') || !iban || iban.length < 15) return null;
+
+        try {
+            const params = new URLSearchParams();
+            params.append('type', 'custom');
+            params.append('country', 'IT');
+            params.append('email', partnerData.email || 'partner@example.com');
+            params.append('external_account', iban);
+            params.append('business_type', 'individual');
+            params.append('capabilities[transfers][requested]', 'true');
+            params.append('tos_acceptance[date]', Math.floor(Date.now() / 1000).toString());
+            params.append('tos_acceptance[ip]', '127.0.0.1');
+
+            const res = await fetch('https://api.stripe.com/v1/accounts', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + sk,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log("⚡ Connected Account registrato con IBAN su Stripe! ID Account:", data.id);
+                return data.id;
+            } else {
+                const errData = await res.json();
+                console.warn("Avviso registrazione IBAN su Stripe Connect:", errData);
+                return null;
+            }
+        } catch (e) {
+            console.error("Errore creazione Stripe Connect Account da IBAN:", e);
+            return null;
+        }
     }
 }
 

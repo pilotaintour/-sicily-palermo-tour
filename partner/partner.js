@@ -209,8 +209,99 @@ function caricaDashboardPartner() {
     if (statPaid) statPaid.textContent = `€${paidCommission.toFixed(2)}`;
     if (statCount) statCount.textContent = totalSalesCount;
 
+    // Popola form coordinate bancarie & Stripe Connect
+    const ibanEl = document.getElementById('partner-iban-input');
+    const holderEl = document.getElementById('partner-bank-holder-input');
+    const vatEl = document.getElementById('partner-vat-input');
+    const stripeEl = document.getElementById('partner-stripe-account-input');
+    const notesEl = document.getElementById('partner-bank-notes-input');
+    const badgeEl = document.getElementById('partner-stripe-status-badge');
+
+    if (ibanEl) ibanEl.value = partner.iban || '';
+    if (holderEl) holderEl.value = partner.bankHolder || partner.name || '';
+    if (vatEl) vatEl.value = partner.vat || '';
+    if (stripeEl) stripeEl.value = partner.stripeAccountId || '';
+    if (notesEl) notesEl.value = partner.bankNotes || '';
+
+    if (badgeEl) {
+        if (partner.stripeAccountId && partner.stripeAccountId.startsWith('acct_')) {
+            badgeEl.innerHTML = `
+                <span style="font-size: 0.8rem; font-weight: 800; color: #166534; background: #dcfce7; padding: 6px 14px; border-radius: 20px; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 6px;">
+                    ⚡ Split Payment Attivo (${partner.stripeAccountId})
+                </span>
+            `;
+        } else {
+            badgeEl.innerHTML = `
+                <span style="font-size: 0.8rem; font-weight: 700; color: #d97706; background: #fef3c7; padding: 6px 14px; border-radius: 20px; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 6px;">
+                    ⏳ Liquidazione Manuale IBAN / PayPal
+                </span>
+            `;
+        }
+    }
+
     // Popola Tabella Prenotazioni
     renderTabellaPrenotazioniPartner(partnerBookings, partner);
+}
+
+async function salvaCoordinateBancariePartner(event) {
+    if (event) event.preventDefault();
+
+    const partner = getCurrentLoggedPartner();
+    if (!partner) return;
+
+    const ibanEl = document.getElementById('partner-iban-input');
+    const holderEl = document.getElementById('partner-bank-holder-input');
+    const vatEl = document.getElementById('partner-vat-input');
+    const stripeEl = document.getElementById('partner-stripe-account-input');
+    const notesEl = document.getElementById('partner-bank-notes-input');
+
+    const iban = ibanEl ? ibanEl.value.trim().toUpperCase() : '';
+    const bankHolder = holderEl ? holderEl.value.trim() : '';
+    const vat = vatEl ? vatEl.value.trim().toUpperCase() : '';
+    let stripeAccountId = stripeEl ? stripeEl.value.trim() : '';
+    const bankNotes = notesEl ? notesEl.value.trim() : '';
+
+    // Se l'IBAN è presente e non c'è un ID Stripe, tenta il collegamento automatico dell'IBAN con Stripe Connect
+    if (iban && iban.length >= 15 && (!stripeAccountId || !stripeAccountId.startsWith('acct_')) && window.stripePayment) {
+        try {
+            const autoAccountId = await window.stripePayment.creaAccountStripeConnectDaIBAN({
+                iban: iban,
+                email: partner.email,
+                name: bankHolder || partner.name
+            });
+            if (autoAccountId) {
+                stripeAccountId = autoAccountId;
+                if (stripeEl) stripeEl.value = autoAccountId;
+            }
+        } catch (e) {
+            console.warn("Auto-registrazione IBAN Stripe Connect non completata:", e);
+        }
+    }
+
+    let promoters = getPromoters();
+    promoters = promoters.map(p => {
+        if (String(p.id) === String(partner.id) || String(p.code).toUpperCase() === String(partner.code).toUpperCase()) {
+            return {
+                ...p,
+                iban,
+                bankHolder,
+                vat,
+                stripeAccountId,
+                bankNotes
+            };
+        }
+        return p;
+    });
+
+    savePromoters(promoters);
+
+    let msg = "✅ Coordinate bancarie salvate con successo!";
+    if (stripeAccountId && stripeAccountId.startsWith('acct_')) {
+        msg += `\n\n⚡ Stripe Connect Split Payment attivato! La tua commissione verrà trasferita in automatico via bonifico SEPA al tuo IBAN ad ogni prenotazione effettuata col codice "${partner.code}".`;
+    }
+
+    alert(msg);
+    caricaDashboardPartner();
 }
 
 function renderTabellaPrenotazioniPartner(bookingsList, partner) {
@@ -301,3 +392,4 @@ function copiaLinkPartner() {
 window.getPromoters = getPromoters;
 window.savePromoters = savePromoters;
 window.caricaDashboardPartner = caricaDashboardPartner;
+window.salvaCoordinateBancariePartner = salvaCoordinateBancariePartner;
