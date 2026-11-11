@@ -267,12 +267,8 @@ class BrevoEmailService {
     // Invia contemporaneamente l'email di conferma al turista e la notifica all'amministratore (Riconoscimento Automatico Lingua)
     async inviaEmailPrenotazione(bookingData) {
         const apiKey = this.getApiKey();
-        if (!apiKey) {
-            console.log("Nessuna API Key Brevo configurata. Email non inviata.");
-            return { success: false, reason: "API Key mancante" };
-        }
-
-        const customerEmail = bookingData.customerEmail;
+    // Genera l'HTML multilingua per l'email di conferma
+    generaHtmlEmail(bookingData, langKey, tDict, tConf) {
         const customerName = bookingData.customerName || 'Cliente';
         const code = bookingData.code || '#SPT-BOOK';
         const stripeRef = bookingData.paymentIntentId || 'pi_stripe_ref';
@@ -286,29 +282,6 @@ class BrevoEmailService {
         const billingAddress = bookingData.billingAddress || 'N/D';
         const waNum = (localStorage.getItem('spt_wa_number') || '393401234567').replace(/[^0-9]/g, '');
 
-        // Riconoscimento Lingua dell'utente (it, en, es, fr, de)
-        let langKey = 'it';
-        const rawLang = String(lang).toLowerCase();
-        if (rawLang.includes('eng') || rawLang.includes('ingl') || rawLang === 'en') langKey = 'en';
-        else if (rawLang.includes('espa') || rawLang.includes('spag') || rawLang === 'es') langKey = 'es';
-        else if (rawLang.includes('fran') || rawLang === 'fr') langKey = 'fr';
-        else if (rawLang.includes('deut') || rawLang.includes('tedes') || rawLang === 'de') langKey = 'de';
-
-        const tDict = i18nEmail[langKey] || i18nEmail.it;
-
-        // Recupera eventuale personalizzazione Admin se in Italiano, altrimenti usa il dizionario tradotto
-        const tConf = (window.emailTemplateEditor && typeof window.emailTemplateEditor.getConfig === 'function' && langKey === 'it')
-            ? window.emailTemplateEditor.getConfig()
-            : {
-                subject: tDict.subject,
-                welcomeMessage: tDict.welcome,
-                instructions: tDict.instructions,
-                footerText: tDict.footerText
-            };
-
-        const subjectDyn = tConf.subject.replace('{NOME_TOUR}', tourTitle).replace('{CODICE_PRENOTAZIONE}', code);
-
-        // Genera la lista dei partecipanti in formato HTML
         let partecipantiHtml = '';
         if (bookingData.participantsList && Array.isArray(bookingData.participantsList) && bookingData.participantsList.length > 0) {
             partecipantiHtml = `
@@ -327,8 +300,7 @@ class BrevoEmailService {
             `;
         }
 
-        // Email Multilingua Responsiva e Compatibile
-        const htmlTurista = `
+        return `
             <!DOCTYPE html>
             <html lang="${langKey}">
             <head>
@@ -345,7 +317,7 @@ class BrevoEmailService {
             <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; background-color:#f4f7f9; margin:0; padding:20px 10px; color:#0f172a;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed; max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:18px; overflow:hidden; border:1px solid #e2e8f0; box-shadow:0 10px 30px rgba(11,37,69,0.08);">
 
-                    <!-- Header Banner con LOGO UFFICIALE in primo piano -->
+                    <!-- Header Banner -->
                     <tr>
                         <td align="center" style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); padding: 30px 20px; text-align: center; border-bottom: 3px solid #d97706;">
                             <a href="https://pilotaintour.github.io/-sicilypalermotour/" target="_blank" style="text-decoration: none; display: inline-block;">
@@ -451,12 +423,42 @@ class BrevoEmailService {
             </body>
             </html>
         `;
+    }
+
+    // 1. MODULO FRONT-END: Invio Email di Conferma al Turista
+    async inviaEmailFrontEndCliente(bookingData) {
+        const apiKey = this.getApiKey();
+        if (!apiKey || !bookingData || !bookingData.customerEmail) return { success: false, error: "Dati mancanti" };
+
+        const customerEmail = bookingData.customerEmail;
+        const customerName = bookingData.customerName || 'Cliente';
+        const tourTitle = bookingData.tourTitle || 'Tour Palermo';
+        const code = bookingData.code || '#SPT-BOOK';
+        const lang = bookingData.language || 'Italiano';
+
+        let langKey = 'it';
+        const rawLang = String(lang).toLowerCase();
+        if (rawLang.includes('eng') || rawLang.includes('ingl') || rawLang === 'en') langKey = 'en';
+        else if (rawLang.includes('espa') || rawLang.includes('spag') || rawLang === 'es') langKey = 'es';
+        else if (rawLang.includes('fran') || rawLang === 'fr') langKey = 'fr';
+        else if (rawLang.includes('deut') || rawLang.includes('tedes') || rawLang === 'de') langKey = 'de';
+
+        const tDict = i18nEmail[langKey] || i18nEmail.it;
+        const tConf = (window.emailTemplateEditor && typeof window.emailTemplateEditor.getConfig === 'function' && langKey === 'it')
+            ? window.emailTemplateEditor.getConfig()
+            : {
+                subject: tDict.subject,
+                welcomeMessage: tDict.welcome,
+                instructions: tDict.instructions,
+                footerText: tDict.footerText
+            };
+
+        const subjectDyn = tConf.subject.replace('{NOME_TOUR}', tourTitle).replace('{CODICE_PRENOTAZIONE}', code);
+        const htmlTurista = this.generaHtmlEmail(bookingData, langKey, tDict, tConf);
+        const senderEmail = (localStorage.getItem('spt_sender_email') || ADMIN_NOTIFICATION_EMAIL).trim();
 
         try {
-            const senderEmail = (localStorage.getItem('spt_sender_email') || ADMIN_NOTIFICATION_EMAIL).trim();
-
-            // 1. Invio primario al Turista nella sua lingua
-            const resCustomer = await fetch('https://api.brevo.com/v3/smtp/email', {
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',
@@ -471,15 +473,38 @@ class BrevoEmailService {
                 })
             });
 
-            if (!resCustomer.ok) {
-                const errData = await resCustomer.json().catch(() => ({}));
-                console.error("⚠️ Errore Brevo invio email cliente:", resCustomer.status, errData);
+            if (res.ok) {
+                console.log(`✅ [FRONT-END EMAIL] Invio completato con successo al cliente: ${customerEmail}`);
+                return { success: true };
             } else {
-                console.log(`✅ Email Brevo (${langKey.toUpperCase()}) inviata con successo al cliente: ${customerEmail}`);
+                const errData = await res.json().catch(() => ({}));
+                console.error("⚠️ [FRONT-END EMAIL] Errore Brevo:", res.status, errData);
+                return { success: false, error: errData, status: res.status };
             }
+        } catch (e) {
+            console.error("Errore invio email front-end cliente:", e);
+            return { success: false, error: e };
+        }
+    }
 
-            // 2. Invio notifica istantanea all'Amministratore
-            const resAdmin = await fetch('https://api.brevo.com/v3/smtp/email', {
+    // 2. MODULO BACK-END: Invio Notifica Prenotazione all'Amministratore
+    async inviaEmailBackEndAdmin(bookingData) {
+        const apiKey = this.getApiKey();
+        if (!apiKey || !bookingData) return { success: false, error: "Dati mancanti" };
+
+        const customerName = bookingData.customerName || 'Cliente';
+        const tourTitle = bookingData.tourTitle || 'Tour Palermo';
+        const total = bookingData.total || '0.00';
+        const htmlTurista = this.generaHtmlEmail(bookingData, 'it', i18nEmail.it, {
+            subject: i18nEmail.it.subject,
+            welcomeMessage: i18nEmail.it.welcome,
+            instructions: i18nEmail.it.instructions,
+            footerText: i18nEmail.it.footerText
+        });
+        const senderEmail = (localStorage.getItem('spt_sender_email') || ADMIN_NOTIFICATION_EMAIL).trim();
+
+        try {
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',
@@ -494,18 +519,25 @@ class BrevoEmailService {
                 })
             });
 
-            if (!resAdmin.ok) {
-                const errData = await resAdmin.json().catch(() => ({}));
-                console.error("⚠️ Errore Brevo invio email admin:", resAdmin.status, errData);
+            if (res.ok) {
+                console.log(`✅ [BACK-END EMAIL] Notifica inviata con successo all'Admin: ${ADMIN_NOTIFICATION_EMAIL}`);
+                return { success: true };
             } else {
-                console.log(`✅ Notifica prenotazione inviata con successo all'Admin: ${ADMIN_NOTIFICATION_EMAIL}`);
+                const errData = await res.json().catch(() => ({}));
+                console.error("⚠️ [BACK-END EMAIL] Errore Brevo admin:", res.status, errData);
+                return { success: false, error: errData, status: res.status };
             }
-
-            return { success: true };
         } catch (e) {
-            console.error("Errore generale invio email Brevo:", e);
+            console.error("Errore invio notifica back-end admin:", e);
             return { success: false, error: e };
         }
+    }
+
+    // Orchestratore principale: invia sia al Front-End (Turista) sia al Back-End (Admin) in modo indipendente
+    async inviaEmailPrenotazione(bookingData) {
+        const resFront = await this.inviaEmailFrontEndCliente(bookingData);
+        const resBack = await this.inviaEmailBackEndAdmin(bookingData);
+        return { success: resFront.success || resBack.success, front: resFront, back: resBack };
     }
 
     // Invia email all'utente quando viene eseguito un rimborso totale o parziale con penale (Collegato SOLO ai due pulsanti dedicati)
