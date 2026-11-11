@@ -591,6 +591,56 @@ class BrevoEmailService {
             console.error("Errore invio email rimborso Brevo:", e);
         }
     }
+
+    // Invia un'email di test in tempo reale e restituisce l'esito o l'errore esatto di Brevo
+    async testEmailBrevo(destEmail) {
+        const apiKey = this.getApiKey();
+        const senderEmail = (localStorage.getItem('spt_sender_email') || ADMIN_NOTIFICATION_EMAIL).trim();
+        const targetEmail = (destEmail || senderEmail || ADMIN_NOTIFICATION_EMAIL).trim();
+
+        if (!apiKey) {
+            return { success: false, error: "API Key di Brevo mancante. Inseriscila nel campo soprastante." };
+        }
+
+        try {
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': apiKey,
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sender: { name: "Sicily Palermo Tour Test", email: senderEmail },
+                    to: [{ email: targetEmail, name: "Admin Test" }],
+                    subject: "🧪 Test Inviato con Successo - Sicily Palermo Tour",
+                    htmlContent: `
+                        <div style="font-family:sans-serif; padding:24px; background:#f0f9ff; border-radius:12px; border:2px solid #0284c7; max-width:500px; margin:0 auto;">
+                            <h2 style="color:#0369a1; margin-top:0;">🎉 Configurazione Brevo Funzionante!</h2>
+                            <p style="color:#334155; font-size:1rem; line-height:1.5;">
+                                Se stai leggendo questa email, il tuo sistema di invio automatico su <strong>Sicily Palermo Tour</strong> è configurato ed attivo al 100%!
+                            </p>
+                            <p style="font-size:0.85rem; color:#64748b;">
+                                Mittente Autorizzato: <code>${senderEmail}</code><br>
+                                Destinatario: <code>${targetEmail}</code>
+                            </p>
+                        </div>
+                    `
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                return { success: true, messageId: data.messageId, senderEmail: senderEmail, targetEmail: targetEmail };
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                const msg = errData.message || errData.code || ("Errore HTTP Brevo " + res.status);
+                return { success: false, error: msg, status: res.status };
+            }
+        } catch (e) {
+            return { success: false, error: e.message || "Errore di connessione di rete." };
+        }
+    }
 }
 
 // Istanza globale del servizio email

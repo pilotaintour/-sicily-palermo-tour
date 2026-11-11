@@ -75,11 +75,42 @@ function salvaChiaveBrevo() {
         if (window.brevoEmailService) {
             window.brevoEmailService.saveApiKey(key);
         }
-        alert('✅ API Key Brevo Email ed Email Mittente salvate con successo!');
-    } else {
-        alert('Per favore inserisci la tua API Key di Brevo.');
     }
 }
+
+async function inviaEmailTestAdmin(event) {
+    salvaChiaveBrevo();
+    const senderInput = document.getElementById('brevo-sender-input');
+    const targetEmail = senderInput ? senderInput.value.trim() : 'pilotaintour13@gmail.com';
+
+    if (!window.brevoEmailService) {
+        alert('⚠️ Modulo Brevo non pronto. Ricarica la pagina e riprova.');
+        return;
+    }
+
+    const btn = event ? event.target : null;
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Invio email di test in corso...';
+    }
+
+    try {
+        const res = await window.brevoEmailService.testEmailBrevo(targetEmail);
+        if (res && res.success) {
+            alert(`🎉 EMAIL DI TEST INVIATA CON SUCCESSO VIA BREVO!\n\nMittente: ${res.senderEmail}\nDestinatario: ${res.targetEmail}\nID Messaggio Brevo: ${res.messageId}\n\nControlla adesso la tua casella di posta (${res.targetEmail}) compresa la cartella Spam/Promozioni!`);
+        } else {
+            alert(`⚠️ IMPOSSIBILE INVIARE L'EMAIL DA BREVO:\n\nEsito restituito da Brevo: "${res.error || 'Errore di configurazione'}"\n\n💡 SOLUZIONE RAPIDA:\n1. Se l'errore dice "Sender email is not verified", accedi a Brevo -> Senders & IP e conferma l'email "${targetEmail}".\n2. Assicurati che l'API Key xkeysib-... sia attiva.`);
+        }
+    } catch (err) {
+        alert(`❌ Errore durante l'invio dell'email di test: ${err.message || err}`);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '🧪 Invia Email di Test Ora';
+        }
+    }
+}
+window.inviaEmailTestAdmin = inviaEmailTestAdmin;
 
 // GESTIONE FOTO SFONDO COPERTINA HOMEPAGE (HERO SLIDER)
 function caricaFotoHeroConfig() {

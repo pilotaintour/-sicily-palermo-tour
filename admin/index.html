@@ -635,8 +635,9 @@
                                     <label style="display: block; font-weight: bold; font-size: 0.85rem; color: #0b2545; margin-bottom: 4px;">Email Mittente Autorizzata Brevo (es. pilotaintour13@gmail.com):</label>
                                     <input type="email" id="brevo-sender-input" placeholder="pilotaintour13@gmail.com" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
                                 </div>
-                                <div>
-                                    <button onclick="salvaChiaveBrevo()" class="btn-primary" style="background-color: #009255; padding: 10px 20px;">💾 Salva Configurazione Brevo Email</button>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;">
+                                    <button onclick="salvaChiaveBrevo(); alert('✅ Configurazione Brevo salvata!');" class="btn-primary" style="background-color: #009255; padding: 10px 20px;">💾 Salva Configurazione Brevo Email</button>
+                                    <button onclick="inviaEmailTestAdmin(event)" class="btn-secondary" style="background-color: #0369a1; color: white; border: none; padding: 10px 20px; font-weight: bold;">🧪 Invia Email di Test Ora</button>
                                 </div>
                             </div>
                         </div>
