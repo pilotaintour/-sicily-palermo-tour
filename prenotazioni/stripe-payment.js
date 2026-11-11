@@ -470,7 +470,7 @@ class StripePaymentManager {
                         console.log(`⚡ Stripe Connect Split Payment configurato: ${commissionAmount}€ (${commCents} cents) verso ${stripeConnectAccountId}`);
                     }
 
-                    const res = await fetch('https://api.stripe.com/v1/payment_intents', {
+                    let res = await fetch('https://api.stripe.com/v1/payment_intents', {
                         method: 'POST',
                         headers: {
                             'Authorization': 'Bearer ' + sk,
@@ -478,6 +478,21 @@ class StripePaymentManager {
                         },
                         body: params
                     });
+
+                    // Se la chiamata fallisce causa transfer_data[destination] (es. account test non presente su Stripe), riprova subito senza transfer_data per completare SEMPRE l'incasso su Stripe!
+                    if (!res.ok && params.has('transfer_data[destination]')) {
+                        console.warn("⚠️ Account Stripe Connect di test non trovato nel tuo account Stripe, riprovo l'incasso direttamente sul tuo conto Stripe principale!");
+                        params.delete('transfer_data[destination]');
+                        params.delete('transfer_data[amount]');
+                        res = await fetch('https://api.stripe.com/v1/payment_intents', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + sk,
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: params
+                        });
+                    }
 
                     if (res.ok) {
                         const intent = await res.json();
@@ -562,7 +577,7 @@ class StripePaymentManager {
                     params.append('metadata[partner_commission_cents]', commCents.toString());
                 }
 
-                const res = await fetch('https://api.stripe.com/v1/payment_intents', {
+                let res = await fetch('https://api.stripe.com/v1/payment_intents', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + sk,
@@ -570,6 +585,19 @@ class StripePaymentManager {
                     },
                     body: params
                 });
+
+                if (!res.ok && params.has('transfer_data[destination]')) {
+                    params.delete('transfer_data[destination]');
+                    params.delete('transfer_data[amount]');
+                    res = await fetch('https://api.stripe.com/v1/payment_intents', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + sk,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: params
+                    });
+                }
 
                 if (res.ok) {
                     const intent = await res.json();
