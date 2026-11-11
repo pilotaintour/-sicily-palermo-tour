@@ -120,6 +120,11 @@ class StripeClientCheckout {
     }
 
     mountCardForm(containerId) {
+        if (window.virtualCardComponent && typeof window.virtualCardComponent.render === 'function') {
+            window.virtualCardComponent.render(containerId);
+            return;
+        }
+
         const container = document.getElementById(containerId);
         if (!container) return;
 

@@ -58,6 +58,10 @@ class UnifiedStripePaymentManager {
     }
 
     mountCardForm(containerId) {
+        if (window.virtualCardComponent && typeof window.virtualCardComponent.render === 'function') {
+            window.virtualCardComponent.render(containerId);
+            return;
+        }
         if (window.stripeClientCheckout) {
             window.stripeClientCheckout.mountCardForm(containerId);
         }
