@@ -162,18 +162,23 @@ class StripeClientCheckout {
                 <!-- Box Dati Carta di Credito -->
                 <div id="box-metodo-card" style="display: block; background: #fafcfd; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px;">
                     <style>
+                        .virtual-card-preview input,
+                        .virtual-card-preview input:focus,
+                        .virtual-card-preview input:active,
+                        .virtual-card-preview input:-webkit-autofill {
+                            color: #ffffff !important;
+                            -webkit-text-fill-color: #ffffff !important;
+                            caret-color: #ffffff !important;
+                            background: transparent !important;
+                            opacity: 1 !important;
+                        }
                         .virtual-card-preview input:-webkit-autofill,
                         .virtual-card-preview input:-webkit-autofill:hover,
                         .virtual-card-preview input:-webkit-autofill:focus,
                         .virtual-card-preview input:-webkit-autofill:active {
                             -webkit-box-shadow: 0 0 0 100px #1e293b inset !important;
                             -webkit-text-fill-color: #ffffff !important;
-                            caret-color: #ffffff !important;
                             transition: background-color 50000s ease-in-out 0s !important;
-                        }
-                        .virtual-card-preview input {
-                            background: transparent !important;
-                            color: #ffffff !important;
                         }
                         .virtual-card-preview iframe {
                             background: transparent !important;
@@ -195,7 +200,7 @@ class StripeClientCheckout {
                         <div style="margin-bottom: 18px;">
                             <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">💳 Numero Carta *</span>
                             <div id="stripe-card-number-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 4px 10px; min-height: 40px; display: flex; align-items: center;">
-                                <input type="text" id="stripe-card-number-fallback" placeholder="4242 4242 4242 4242" style="width: 100%; background: transparent; border: none; color: #ffffff; font-size: 1rem; font-family: monospace; outline: none; padding: 6px 0;">
+                                <input type="text" id="stripe-card-number-fallback" placeholder="4242 4242 4242 4242" style="width: 100%; background: transparent !important; border: none !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-size: 1.05rem; font-family: monospace; font-weight: 700; outline: none !important; padding: 6px 0;">
                             </div>
                         </div>
 
@@ -203,18 +208,18 @@ class StripeClientCheckout {
                         <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: flex-end;">
                             <div>
                                 <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">👤 Intestatario *</span>
-                                <input type="text" id="stripe-cardholder-name" placeholder="MARIO ROSSI" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 11px 10px; color: white; font-size: 0.9rem; width: 100%; box-sizing: border-box; text-transform: uppercase; font-weight: 700; outline: none;">
+                                <input type="text" id="stripe-cardholder-name" placeholder="MARIO ROSSI" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 11px 10px; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-size: 0.9rem; width: 100%; box-sizing: border-box; text-transform: uppercase; font-weight: 700; outline: none;">
                             </div>
                             <div>
                                 <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">⏳ Scadenza *</span>
                                 <div id="stripe-card-expiry-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 4px 10px; min-height: 40px; display: flex; align-items: center;">
-                                    <input type="text" id="stripe-card-expiry-fallback" placeholder="12/28" style="width: 100%; background: transparent; border: none; color: #ffffff; font-size: 0.9rem; font-family: monospace; outline: none; padding: 6px 0;">
+                                    <input type="text" id="stripe-card-expiry-fallback" placeholder="12/28" style="width: 100%; background: transparent !important; border: none !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-size: 0.95rem; font-family: monospace; font-weight: 700; outline: none !important; padding: 6px 0;">
                                 </div>
                             </div>
                             <div>
                                 <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">🔒 CVC / CVV *</span>
                                 <div id="stripe-card-cvc-mount" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 4px 10px; min-height: 40px; display: flex; align-items: center;">
-                                    <input type="text" id="stripe-card-cvc-fallback" placeholder="123" maxlength="4" style="width: 100%; background: transparent; border: none; color: #ffffff; font-size: 0.9rem; font-family: monospace; outline: none; padding: 6px 0;">
+                                    <input type="text" id="stripe-card-cvc-fallback" placeholder="123" maxlength="4" style="width: 100%; background: transparent !important; border: none !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-size: 0.95rem; font-family: monospace; font-weight: 700; outline: none !important; padding: 6px 0;">
                                 </div>
                             </div>
                         </div>
