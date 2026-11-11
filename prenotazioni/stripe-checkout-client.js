@@ -318,25 +318,29 @@ class StripeClientCheckout {
             const cvcEl = document.getElementById('stripe-card-cvc-fallback');
 
             if (numEl) {
-                numEl.oninput = (e) => {
-                    let v = e.target.value.replace(/\D/g, '').substring(0, 16);
-                    e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
-                };
+                numEl.addEventListener('input', (e) => {
+                    let val = e.target.value.replace(/[^\d\s]/g, '');
+                    let digits = val.replace(/\s/g, '');
+                    if (digits.length > 16) digits = digits.substring(0, 16);
+                    let formatted = digits.replace(/(.{4})/g, '$1 ').trim();
+                    if (digits.length > 0) {
+                        e.target.value = formatted;
+                    }
+                });
             }
             if (expEl) {
-                expEl.oninput = (e) => {
-                    let v = e.target.value.replace(/\D/g, '').substring(0, 4);
-                    if (v.length >= 3) {
-                        e.target.value = v.substring(0, 2) + '/' + v.substring(2);
-                    } else {
-                        e.target.value = v;
+                expEl.addEventListener('input', (e) => {
+                    let val = e.target.value.replace(/[^\d\/]/g, '');
+                    if (val.length === 2 && !val.includes('/') && e.inputType !== 'deleteContentBackward') {
+                        e.target.value = val + '/';
                     }
-                };
+                });
             }
             if (cvcEl) {
-                cvcEl.oninput = (e) => {
-                    e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
-                };
+                cvcEl.addEventListener('input', (e) => {
+                    let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+                    e.target.value = val;
+                });
             }
         }, 50);
     }
