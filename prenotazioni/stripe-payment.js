@@ -171,6 +171,28 @@ class StripePaymentManager {
 
                 <!-- Box Dati Carta di Credito -->
                 <div id="box-metodo-card" style="display: block; background: #fafcfd; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px;">
+                    <style>
+                        .virtual-card-preview input:-webkit-autofill,
+                        .virtual-card-preview input:-webkit-autofill:hover,
+                        .virtual-card-preview input:-webkit-autofill:focus,
+                        .virtual-card-preview input:-webkit-autofill:active {
+                            -webkit-box-shadow: 0 0 0 100px #1e293b inset !important;
+                            -webkit-text-fill-color: #ffffff !important;
+                            caret-color: #ffffff !important;
+                            transition: background-color 50000s ease-in-out 0s !important;
+                        }
+                        .virtual-card-preview input {
+                            background: transparent !important;
+                            color: #ffffff !important;
+                        }
+                        .virtual-card-preview iframe {
+                            background: transparent !important;
+                        }
+                        #stripe-card-number-mount, #stripe-card-expiry-mount, #stripe-card-cvc-mount {
+                            background: rgba(255, 255, 255, 0.12) !important;
+                            border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+                        }
+                    </style>
 
                     <!-- Virtual Credit Card Visual Widget with Embedded Inputs -->
                     <div class="virtual-card-preview" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0b2545 100%); border-radius: 20px; padding: 26px; color: white; box-shadow: 0 16px 36px rgba(15, 23, 42, 0.35); position: relative; max-width: 500px; margin: 0 auto 22px auto; border: 1px solid rgba(255,255,255,0.15);">
