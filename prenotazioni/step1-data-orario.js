@@ -100,23 +100,21 @@ class Step1DataOrario {
             this.selectedDateReadable = initData.dateReadable;
         }
 
-        if (!this.selectedDateISO) {
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const d = String(today.getDate()).padStart(2, '0');
-            this.selectedDateISO = `${y}-${m}-${d}`;
-            this.selectedDateReadable = `${d}/${m}/${y}`;
+        if (!this.selectedSlot && this.calendarInstance) {
+            this.selectedSlot = this.calendarInstance.selectedSlot;
+        }
+
+        if (this.calendarInstance && this.calendarInstance.selectedDate && this.selectedSlot) {
+            const isPassed = this.calendarInstance.isSlotPassed(this.selectedSlot, this.calendarInstance.selectedDate);
+            if (isPassed) {
+                alert("⚠️ L'orario selezionato per oggi è già passato. Per favore seleziona un orario valido o una data futura.");
+                return;
+            }
         }
 
         if (!this.selectedSlot) {
-            if (this.calendarInstance && this.calendarInstance.selectedSlot) {
-                this.selectedSlot = this.calendarInstance.selectedSlot;
-            } else if (this.calendarInstance && this.calendarInstance.defaultSlots && this.calendarInstance.defaultSlots.length > 0) {
-                this.selectedSlot = this.calendarInstance.defaultSlots[0].time;
-            } else {
-                this.selectedSlot = '09:30';
-            }
+            alert("⚠️ Tutti gli orari per la data selezionata sono passati o esauriti. Per favore seleziona un'altra data.");
+            return;
         }
 
         if (typeof this.onComplete === 'function') {
