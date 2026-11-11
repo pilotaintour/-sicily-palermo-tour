@@ -56,20 +56,26 @@ function salvaChiaviStripe() {
 
 function caricaChiaveBrevo() {
     const input = document.getElementById('brevo-key-input');
+    const senderInput = document.getElementById('brevo-sender-input');
     if (input) input.value = localStorage.getItem('spt_brevo_api_key') || '';
+    if (senderInput) senderInput.value = localStorage.getItem('spt_sender_email') || 'pilotaintour13@gmail.com';
 }
 
 function salvaChiaveBrevo() {
     const input = document.getElementById('brevo-key-input');
+    const senderInput = document.getElementById('brevo-sender-input');
     if (!input) return;
 
     const key = input.value.trim();
+    const senderEmail = senderInput ? senderInput.value.trim() : '';
+
     if (key) {
         localStorage.setItem('spt_brevo_api_key', key);
+        if (senderEmail) localStorage.setItem('spt_sender_email', senderEmail);
         if (window.brevoEmailService) {
             window.brevoEmailService.saveApiKey(key);
         }
-        alert('✅ API Key Brevo Email salvata con successo!');
+        alert('✅ API Key Brevo Email ed Email Mittente salvate con successo!');
     } else {
         alert('Per favore inserisci la tua API Key di Brevo.');
     }
