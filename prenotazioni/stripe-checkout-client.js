@@ -78,10 +78,10 @@ class StripeClientCheckout {
 
     getPublishableKey() {
         const saved = localStorage.getItem(STRIPE_PK_KEY_CLIENT) || localStorage.getItem('spt_stripe_pk');
-        if (saved && saved.startsWith('pk_') && saved.length > 20) {
+        if (saved && (saved.startsWith('pk_live_') || (saved.startsWith('pk_test_') && !saved.includes('YOUR_STRIPE') && !saved.includes('YOUR_KEY') && saved.length > 30))) {
             return saved;
         }
-        return DEFAULT_STRIPE_PK_CLIENT;
+        return '';
     }
 
     getSecretKey() {
@@ -306,6 +306,34 @@ class StripeClientCheckout {
         } else {
             this.isMounted = false;
         }
+
+        setTimeout(() => {
+            const numEl = document.getElementById('stripe-card-number-fallback');
+            const expEl = document.getElementById('stripe-card-expiry-fallback');
+            const cvcEl = document.getElementById('stripe-card-cvc-fallback');
+
+            if (numEl) {
+                numEl.oninput = (e) => {
+                    let v = e.target.value.replace(/\D/g, '').substring(0, 16);
+                    e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
+                };
+            }
+            if (expEl) {
+                expEl.oninput = (e) => {
+                    let v = e.target.value.replace(/\D/g, '').substring(0, 4);
+                    if (v.length >= 3) {
+                        e.target.value = v.substring(0, 2) + '/' + v.substring(2);
+                    } else {
+                        e.target.value = v;
+                    }
+                };
+            }
+            if (cvcEl) {
+                cvcEl.oninput = (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+                };
+            }
+        }, 50);
     }
 
     renderPayPalSmartButtons() {
