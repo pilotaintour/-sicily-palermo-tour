@@ -78,7 +78,7 @@ class StripeClientCheckout {
 
     getPublishableKey() {
         const saved = localStorage.getItem(STRIPE_PK_KEY_CLIENT) || localStorage.getItem('spt_stripe_pk');
-        if (saved && saved.startsWith('pk_test_') && saved.length > 30) {
+        if (saved && saved.startsWith('pk_') && saved.length > 20) {
             return saved;
         }
         return DEFAULT_STRIPE_PK_CLIENT;
@@ -86,10 +86,11 @@ class StripeClientCheckout {
 
     getSecretKey() {
         if (window.adminStripeManager && typeof window.adminStripeManager.getSecretKey === 'function') {
-            return window.adminStripeManager.getSecretKey();
+            const adminSk = window.adminStripeManager.getSecretKey();
+            if (adminSk && adminSk.startsWith('sk_')) return adminSk;
         }
-        const saved = localStorage.getItem('spt_stripe_sk');
-        if (saved && saved.startsWith('sk_test_') && saved.length > 30) {
+        const saved = localStorage.getItem('spt_stripe_sk') || localStorage.getItem('STRIPE_SK_KEY');
+        if (saved && saved.startsWith('sk_') && saved.length > 20) {
             return saved;
         }
         return '';

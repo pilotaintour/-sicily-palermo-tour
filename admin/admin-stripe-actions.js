@@ -21,7 +21,7 @@ class AdminStripeManager {
 
     getPublishableKey() {
         const saved = localStorage.getItem(STRIPE_PK_KEY_ADMIN) || localStorage.getItem('spt_stripe_pk');
-        if (saved && saved.startsWith('pk_test_') && saved.length > 30) {
+        if (saved && saved.startsWith('pk_') && saved.length > 20) {
             return saved;
         }
         return DEFAULT_STRIPE_PK_ADMIN;
@@ -29,14 +29,10 @@ class AdminStripeManager {
 
     getSecretKey() {
         const saved = localStorage.getItem(STRIPE_SK_KEY_ADMIN) || localStorage.getItem('spt_stripe_sk');
-        if (saved && saved.startsWith('sk_test_') && saved.length > 30) {
+        if (saved && saved.startsWith('sk_') && saved.length > 20) {
             return saved;
         }
-        try {
-            return atob(DEFAULT_SK_P1_ADMIN + DEFAULT_SK_P2_ADMIN);
-        } catch (e) {
-            return '';
-        }
+        return '';
     }
 
     saveKeys(publishableKey, secretKey) {
