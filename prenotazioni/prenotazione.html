@@ -237,7 +237,7 @@
 
                 this.step4Module = new Step4Conferma('step-card-4', {
                     onPrev: () => this.goToStep(3),
-                    onConfirm: (res) => this.confermaDefinitiva(res)
+                    onConfirm: async (res) => await this.confermaDefinitiva(res)
                 });
 
                 this.goToStep(1);
@@ -375,7 +375,7 @@
                 this.goToStep(stepNum);
             }
 
-            confermaDefinitiva(res) {
+            async confermaDefinitiva(res) {
                 try {
                     const list = JSON.parse(localStorage.getItem('spt_bookings') || '[]');
                     const record = {
@@ -398,7 +398,7 @@
                     this.scalaCapienzaPostiTour();
 
                     if (window.brevoEmailService) {
-                        window.brevoEmailService.inviaEmailPrenotazione(record);
+                        await window.brevoEmailService.inviaEmailPrenotazione(record);
                     }
                 } catch (e) {
                     console.error("Errore salvataggio booking o invio email Brevo:", e);

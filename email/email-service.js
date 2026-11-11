@@ -139,9 +139,9 @@ class BrevoEmailService {
 
     getApiKey() {
         const saved = localStorage.getItem(BREVO_KEY_STORAGE);
-        if (saved) return saved;
+        if (saved && saved.startsWith('xkeysib-')) return saved;
         try {
-            return atob(BREVO_P1 + BREVO_P2);
+            return atob(BREVO_P1) + atob(BREVO_P2);
         } catch (e) {
             return '';
         }
