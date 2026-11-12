@@ -463,10 +463,26 @@ class AdminSmartParser {
             }
         }
 
+        // Estrazione orari anche dai punti di raccolta estratti (es. "Piazzale Giotto (Ore 09:00)")
+        if (pickupPoints && pickupPoints.length > 0) {
+            pickupPoints.forEach(pt => {
+                const matchPt = pt.match(/(?:Ore|ore|at)?\s*([0-1]?[0-9]|2[0-3])[:\.](([0-5][0-9]))/i);
+                if (matchPt) {
+                    const hh = String(matchPt[1]).padStart(2, '0');
+                    const mm = matchPt[2];
+                    const timeStr = `${hh}:${mm}`;
+                    if (!seenTimes.has(timeStr)) {
+                        seenTimes.add(timeStr);
+                        extractedTimeSlots.push({ time: timeStr, capacity: 53 });
+                    }
+                }
+            });
+        }
+
         extractedTimeSlots.sort((a, b) => a.time.localeCompare(b.time));
 
         if (extractedTimeSlots.length === 0) {
-            extractedTimeSlots.push({ time: '10:00', capacity: 53 });
+            extractedTimeSlots.push({ time: '09:00', capacity: 53 });
         }
 
         // 6. Estrazione Intelligente Programma e Tappe del Tour

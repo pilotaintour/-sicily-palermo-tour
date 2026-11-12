@@ -11,6 +11,17 @@ function getAdminPassword() {
     return localStorage.getItem('spt_admin_password') || DEFAULT_ADMIN_PASSWORD;
 }
 
+function escapeHtmlAdmin(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escapeHtmlAdmin = escapeHtmlAdmin;
+
 // INIZIALIZZAZIONE ALL'AVVIO
 document.addEventListener('DOMContentLoaded', () => {
     verificaStatoAutenticazione();
