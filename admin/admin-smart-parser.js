@@ -208,14 +208,44 @@ class AdminSmartParser {
             });
         }
 
-        // 5. Estrazione Punti di Raccolta e Orari
+        // 5. Estrazione Punti di Raccolta e Orari (SOLO Luoghi Effettivi, ESCLUSI Termini/Rimborsi/Note)
         const pickupPoints = [];
+
+        // Parole/Frasi da escludere assolutamente (non sono luoghi di raccolta)
+        const excludeRegex = /garantit|raggiungiment|mancat|sostituzion|rimbors|penal|annullam|cancellaz|richiesta|programma|quota|prezzo|comprende|esclude|incluso|inclusi|raduno|regolament|nota\b|note\b|info\b|informazion|condizion|termini|sconto|commissione|organizzat|assicuraz/i;
+
+        // Parole chiave che identificano un LUOGO/PUNTO DI RITROVO effettivo
+        const locationKeywordsRegex = /giotto|villabate|bagheria|politeama|cattedrale|teatro|massimo|stazione|porto|molo|aeroporto|sferracavallo|mondello|monreale|agrigento|catania|trapani|messina|siracusa|enna|caltanissetta|ragusa|piazza|piazzale|via\b|viale\b|corso\b|largo\b|svincolo|casello|distributore|hotel|bar\b|pasticceria|rotonda|pensilina|fermata/i;
+
         lines.forEach(line => {
-            if (/partenz|raccolta|fermat|stop|giotto|villabate|bagheria|piazza|piazzale|ore\s*\d+|at\s*\d+/i.test(line)) {
-                let cleanLine = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, '').trim();
-                cleanLine = cleanLine.replace(/^[:\s\*-]+/g, '').trim();
-                if (cleanLine && cleanLine.length > 3 && !cleanLine.toLowerCase().startsWith('partenze') && !cleanLine.toLowerCase().startsWith('stops')) {
-                    pickupPoints.push(cleanLine);
+            let cleanLine = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-\d+\.]/gu, ' ').trim();
+            cleanLine = cleanLine.replace(/^[:\s\*-]+/g, '').replace(/[:\s]+$/g, '').trim();
+
+            const lower = line.toLowerCase();
+
+            // 1. Salta se contiene frasi di termini, rimborsi, regole o avvisi
+            if (excludeRegex.test(lower)) {
+                return;
+            }
+
+            // 2. Salta intestazioni di sezione (es. "Punti di raccolta:", "Luoghi di partenza:", "Orari:")
+            if (cleanLine.length < 3 || /^(punti|luoghi|orari|partenze|fermate|ritrovo|stoppings)(\s+di\s+raccolta|\s+di\s+partenza)?$/i.test(cleanLine)) {
+                return;
+            }
+
+            // 3. Verifica se la riga descrive un LUOGO effettivo
+            const containsPlaceKeyword = locationKeywordsRegex.test(lower);
+            const containsTimePattern = /\b([0-1]?[0-9]|2[0-3])[:\.\s]?[0-5][0-9]\b/.test(lower) || /\bore\b/i.test(lower);
+
+            // Una riga è un luogo valido se contiene un nome di luogo noto O un pattern luogo/orario di fermata
+            if (containsPlaceKeyword || (containsTimePattern && (lower.includes('ore') || lower.includes('h')) && cleanLine.length < 50)) {
+                let displayPoint = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*]/gu, '').trim();
+                displayPoint = displayPoint.replace(/^[\s\*\-\d+\.\:\)]+/, '').trim();
+
+                if (displayPoint && displayPoint.length > 3 && !excludeRegex.test(displayPoint)) {
+                    if (!pickupPoints.some(p => p.toLowerCase() === displayPoint.toLowerCase())) {
+                        pickupPoints.push(displayPoint);
+                    }
                 }
             }
         });
