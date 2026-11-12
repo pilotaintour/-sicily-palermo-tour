@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     verificaStatoAutenticazione();
 
     if (typeof caricaNumeroWhatsApp === 'function') caricaNumeroWhatsApp();
-    if (typeof renderCampiTappe === 'function') renderCampiTappe();
     if (typeof renderCampiOrari === 'function') renderCampiOrari();
     if (typeof renderCampiPuntiRaccolta === 'function') renderCampiPuntiRaccolta();
 });
@@ -88,7 +87,6 @@ function verificaStatoAutenticazione() {
         }
 
         if (typeof renderCampiPuntiRaccolta === 'function') renderCampiPuntiRaccolta();
-        if (typeof renderCampiTappe === 'function') renderCampiTappe();
         if (typeof renderCampiOrari === 'function') renderCampiOrari();
         if (typeof caricaElencoItinerari === 'function') caricaElencoItinerari();
         if (typeof caricaPrenotazioniAdmin === 'function') caricaPrenotazioniAdmin();

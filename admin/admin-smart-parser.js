@@ -571,18 +571,6 @@ class AdminSmartParser {
             renderCampiPuntiRaccolta();
         }
 
-        // Tappe
-        if (!window.tappeCorrenti || !Array.isArray(window.tappeCorrenti)) {
-            window.tappeCorrenti = [];
-        }
-        window.tappeCorrenti.length = 0;
-        if (data.tappe && data.tappe.length > 0) {
-            data.tappe.forEach(t => window.tappeCorrenti.push(t));
-        }
-        if (typeof renderCampiTappe === 'function') {
-            renderCampiTappe();
-        }
-
         // Capienza Bus Condivisa (Attiva per default per Bus da 53 posti)
         const busCheckMain = document.getElementById('shared-bus-capacity-main-check');
         const busCheckModal = document.getElementById('shared-bus-capacity-check');

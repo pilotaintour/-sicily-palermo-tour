@@ -91,46 +91,7 @@ function renderGalleriaAnteprima() {
     `).join('');
 }
 
-function renderCampiTappe() {
-    const container = document.getElementById('tappe-input-list');
-    if (!container) return;
-
-    if (tappeCorrenti.length === 0) {
-        tappeCorrenti = ['Incontro con la guida', 'Passeggiata tra i monumenti storici'];
-    }
-
-    container.innerHTML = tappeCorrenti.map((tappaText, idx) => `
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <span style="font-weight: bold; font-size: 0.85rem; color: #e67e22; width: 24px; text-align: center;">${idx + 1}.</span>
-            <input type="text" class="tappa-input" value="${escapeHtmlAdmin(tappaText)}" placeholder="Es. Tappa ${idx + 1}" oninput="aggiornaTappa(${idx}, this.value)" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
-            ${tappeCorrenti.length > 1 ? `<button type="button" class="btn-danger btn-small" onclick="rimuoviCampoTappa(${idx})" title="Rimuovi tappa">✕</button>` : ''}
-        </div>
-    `).join('');
-}
-
-function aggiornaTappa(index, val) {
-    tappeCorrenti[index] = val;
-}
-
-function aggiungiCampoTappa() {
-    tappeCorrenti.push('');
-    renderCampiTappe();
-    setTimeout(() => {
-        const inputs = document.querySelectorAll('.tappa-input');
-        if (inputs.length > 0) inputs[inputs.length - 1].focus();
-    }, 50);
-}
-
-function rimuoviCampoTappa(index) {
-    tappeCorrenti.splice(index, 1);
-    renderCampiTappe();
-}
-
 window.gestisciCaricamentoFotoMultiple = gestisciCaricamentoFotoMultiple;
 window.aggiungiUrlFoto = aggiungiUrlFoto;
 window.rimuoviFotoGalleria = rimuoviFotoGalleria;
 window.renderGalleriaAnteprima = renderGalleriaAnteprima;
-window.renderCampiTappe = renderCampiTappe;
-window.aggiornaTappa = aggiornaTappa;
-window.aggiungiCampoTappa = aggiungiCampoTappa;
-window.rimuoviCampoTappa = rimuoviCampoTappa;

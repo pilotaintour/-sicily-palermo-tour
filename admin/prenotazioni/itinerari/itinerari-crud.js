@@ -218,7 +218,7 @@ async function salvaItinerario(event) {
     const giorniChecks = document.querySelectorAll('input[name="giorno-check"]:checked');
     const availableDays = giorniChecks.length > 0 ? Array.from(giorniChecks).map(c => parseInt(c.value, 10)) : [0, 1, 2, 3, 4, 5, 6];
 
-    const tappe = tappeCorrenti.map(t => t.trim()).filter(t => t !== '');
+    const tappe = (id && itinerari.find(item => String(item.id) === String(id))) ? (itinerari.find(item => String(item.id) === String(id)).tappe || []) : [];
 
     const serviziChecks = document.querySelectorAll('input[name="servizio-check"]:checked');
     const servizi = Array.from(serviziChecks).map(c => c.value);
@@ -305,13 +305,6 @@ function preparaModifica(id) {
     document.getElementById('short-desc').value = item.shortDesc || '';
     document.getElementById('full-desc').value = item.fullDesc || '';
 
-    if (item.tappe && item.tappe.length > 0) {
-        tappeCorrenti = [...item.tappe];
-    } else {
-        tappeCorrenti = ['Incontro con la guida'];
-    }
-    renderCampiTappe();
-
     if (item.timeSlots && item.timeSlots.length > 0) {
         orariCorrenti = [...item.timeSlots];
     } else {
@@ -373,7 +366,6 @@ function resetForm() {
     const fileInput = document.getElementById('image-file-input');
     if (fileInput) fileInput.value = '';
     fotoItinerarioCorrenti = [];
-    tappeCorrenti = ['Incontro con la guida', 'Passeggiata tra i monumenti'];
     orariCorrenti = [
         { time: '10:00', capacity: 53 }
     ];
@@ -389,7 +381,6 @@ function resetForm() {
     puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
     renderCampiPuntiRaccolta();
     renderGalleriaAnteprima();
-    renderCampiTappe();
     renderCampiOrari();
     document.getElementById('form-title').textContent = '➕ Aggiungi Nuovo Itinerario';
     document.getElementById('save-btn').textContent = '💾 Salva Itinerario';
