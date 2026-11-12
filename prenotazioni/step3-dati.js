@@ -231,6 +231,11 @@ class Step3Dati {
         html += `
             <!-- ACCETTAZIONE TERMINI E CONDIZIONI & REGOLAMENTO PENALI -->
             <div id="step3-terms-card" style="background: #fafcfd; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 18px; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <!-- Avviso Garanzia Annullamento per Mancato Raggiungimento Quota -->
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.88rem; color: #0369a1; line-height: 1.5;">
+                    ℹ️ <strong>Garanzia Annullamento & Rimborso 100%:</strong> In caso di mancato raggiungimento del numero minimo di partecipanti o per motivi organizzativi/meteo, la gita potrà essere annullata da parte nostra con <strong>restituzione immediata ed integrale del 100% dell'importo versato</strong>, senza alcuna penale o trattenuta.
+                </div>
+
                 <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; font-size: 0.92rem; color: #0b2545; font-weight: 700;">
                     <input type="checkbox" id="step3-terms-check" style="width: 22px; height: 22px; accent-color: #0b2545; margin-top: 2px; cursor: pointer;">
                     <span style="line-height: 1.5;">
