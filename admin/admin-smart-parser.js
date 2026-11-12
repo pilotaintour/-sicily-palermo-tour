@@ -26,6 +26,31 @@ class AdminSmartParser {
         }
     }
 
+    formatPickupPoint(rawPoint) {
+        if (!rawPoint) return '';
+        let str = String(rawPoint).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, ' ').trim();
+        str = str.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
+
+        // Standardizza "ORE 09.00" o "ORE 09:00" -> "(Ore 09:00)"
+        str = str.replace(/\bore\s*([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/gi, (m, h, min) => `(Ore ${String(h).padStart(2, '0')}:${min})`);
+        str = str.replace(/\b([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/gi, (m, h, min) => `(Ore ${String(h).padStart(2, '0')}:${min})`);
+
+        // Espandi nomi noti per la Sicilia / Palermo
+        if (/^giotto\b/i.test(str)) {
+            str = str.replace(/^giotto\b/i, 'Piazzale Giotto');
+        } else if (/^politeama\b/i.test(str)) {
+            str = str.replace(/^politeama\b/i, 'Piazza Politeama');
+        } else if (/^villabate\b/i.test(str)) {
+            str = str.replace(/^villabate\b/i, 'Villabate');
+        } else if (/^bagheria\b/i.test(str)) {
+            str = str.replace(/^bagheria\b/i, 'Bagheria');
+        }
+
+        // Pulisci doppi spazi e formattazione
+        str = str.replace(/\s+/g, ' ').trim();
+        return str;
+    }
+
     extractDatesFromText(text) {
         const foundDates = [];
         const seenISO = new Set();
@@ -278,10 +303,8 @@ class AdminSmartParser {
         // 5. Estrazione Punti di Raccolta e Orari (SOLO Luoghi Effettivi, ESCLUSI Termini/Rimborsi/Note)
         const pickupPoints = [];
 
-        // Parole/Frasi da escludere assolutamente (non sono luoghi di raccolta)
         const excludeRegex = /garantit|raggiungiment|mancat|sostituzion|rimbors|penal|annullam|cancellaz|richiesta|programma|quota|prezzo|comprende|esclude|incluso|inclusi|raduno|regolament|nota\b|note\b|info\b|informazion|condizion|termini|sconto|commissione|organizzat|assicuraz/i;
 
-        // Parole chiave che identificano un LUOGO/PUNTO DI RITROVO effettivo
         const locationKeywordsRegex = /giotto|villabate|bagheria|politeama|cattedrale|teatro|massimo|stazione|porto|molo|aeroporto|sferracavallo|mondello|monreale|agrigento|catania|trapani|messina|siracusa|enna|caltanissetta|ragusa|piazza|piazzale|via\b|viale\b|corso\b|largo\b|svincolo|casello|distributore|hotel|bar\b|pasticceria|rotonda|pensilina|fermata/i;
 
         lines.forEach(line => {
@@ -290,35 +313,30 @@ class AdminSmartParser {
 
             const lower = line.toLowerCase();
 
-            // 1. Salta se contiene frasi di termini, rimborsi, regole o avvisi
             if (excludeRegex.test(lower)) {
                 return;
             }
 
-            // 2. Salta intestazioni di sezione (es. "Punti di raccolta:", "Luoghi di partenza:", "Orari:")
             if (cleanLine.length < 3 || /^(punti|luoghi|orari|partenze|fermate|ritrovo|stoppings)(\s+di\s+raccolta|\s+di\s+partenza)?$/i.test(cleanLine)) {
                 return;
             }
 
-            // 3. Verifica se la riga descrive un LUOGO effettivo
             const containsPlaceKeyword = locationKeywordsRegex.test(lower);
             const containsTimePattern = /\b([0-1]?[0-9]|2[0-3])[:\.\s]?[0-5][0-9]\b/.test(lower) || /\bore\b/i.test(lower);
 
-            // Una riga è un luogo valido se contiene un nome di luogo noto O un pattern luogo/orario di fermata
-            if (containsPlaceKeyword || (containsTimePattern && (lower.includes('ore') || lower.includes('h')) && cleanLine.length < 50)) {
-                let displayPoint = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*]/gu, '').trim();
-                displayPoint = displayPoint.replace(/^[\s\*\-\d+\.\:\)]+/, '').trim();
+            if (containsPlaceKeyword || (containsTimePattern && (lower.includes('ore') || lower.includes('h')) && cleanLine.length < 60)) {
+                const formattedPoint = this.formatPickupPoint(line);
 
-                if (displayPoint && displayPoint.length > 3 && !excludeRegex.test(displayPoint)) {
-                    if (!pickupPoints.some(p => p.toLowerCase() === displayPoint.toLowerCase())) {
-                        pickupPoints.push(displayPoint);
+                if (formattedPoint && formattedPoint.length > 3 && !excludeRegex.test(formattedPoint)) {
+                    if (!pickupPoints.some(p => p.toLowerCase() === formattedPoint.toLowerCase())) {
+                        pickupPoints.push(formattedPoint);
                     }
                 }
             }
         });
 
         if (pickupPoints.length === 0) {
-            pickupPoints.push('Piazzale Giotto (Ore 10:00)', 'Villabate (Ore 10:20)', 'Bagheria (Ore 10:40)');
+            pickupPoints.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)', 'Bagheria (Ore 09:40)');
         }
 
         // 5b. Estrazione Orari Dinamici nel testo (con capienza predefinita di 53 posti)
