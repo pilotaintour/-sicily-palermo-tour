@@ -5,46 +5,26 @@
 
 const PARTNER_AUTH_KEY = 'spt_partner_logged_in_id';
 
-const DEFAULT_PROMOTERS = [
-    {
-        id: 'prom_hotel10',
-        code: 'HOTEL10',
-        name: 'Hotel Plaza Palermo',
-        email: 'hotel@example.com',
-        password: 'Partner123!',
-        discountPercent: 10,
-        commissionPercent: 10,
-        phone: '+39 091 123456',
-        createdAt: '2025-01-01',
-        status: 'active'
-    },
-    {
-        id: 'prom_palermo10',
-        code: 'PALERMO10',
-        name: 'Promoter Palermo Tour',
-        email: 'promoter@example.com',
-        password: 'Partner123!',
-        discountPercent: 10,
-        commissionPercent: 10,
-        phone: '+39 340 9876543',
-        createdAt: '2025-01-01',
-        status: 'active'
-    }
-];
+const DEFAULT_PROMOTERS = [];
 
 function getPromoters() {
     try {
         const saved = localStorage.getItem('spt_promoters');
-        if (saved) {
+        if (saved !== null) {
             const list = JSON.parse(saved);
-            if (Array.isArray(list) && list.length > 0) return list;
+            if (Array.isArray(list)) {
+                const cleanList = list.filter(p => p.id !== 'prom_hotel10' && p.id !== 'prom_palermo10' && p.email !== 'hotel@example.com' && p.email !== 'promoter@example.com' && p.code !== 'HOTEL10' && p.code !== 'PALERMO10');
+                if (cleanList.length !== list.length) {
+                    localStorage.setItem('spt_promoters', JSON.stringify(cleanList));
+                }
+                return cleanList;
+            }
         }
     } catch (e) {
         console.error("Errore lettura spt_promoters:", e);
     }
-    // Salva default se vuoto
-    localStorage.setItem('spt_promoters', JSON.stringify(DEFAULT_PROMOTERS));
-    return DEFAULT_PROMOTERS;
+    localStorage.setItem('spt_promoters', JSON.stringify([]));
+    return [];
 }
 
 function savePromoters(list) {
