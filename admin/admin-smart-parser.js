@@ -31,9 +31,36 @@ class AdminSmartParser {
         const seenISO = new Set();
         const currentYear = new Date().getFullYear();
 
-        // 1. Day + Month (es: "7 Febbraio 2025", "07 Feb", "7th February")
-        const dayMonthRegex = /\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:di\s+)?([a-zà-ú]{3,10})(?:\s+(\d{4}))?\b/gi;
+        // 1. Date Multiple prima del Mese (es: "14, 15 e 16 Settembre 2026" o "14 e 15 Settembre")
+        const multiDayRegex = /\b(\d{1,2}(?:\s*(?:,|\+|e|ed|al|a|-)\s*\d{1,2})+)\s+(?:di\s+)?([a-zà-ú]{3,10})(?:\s+(\d{4}))?\b/gi;
         let match;
+        while ((match = multiDayRegex.exec(text)) !== null) {
+            const daysPart = match[1];
+            const monthStr = match[2].toLowerCase();
+            let year = match[3] || currentYear;
+            if (String(year).length === 2) year = '20' + year;
+
+            const monthNum = this.monthMap[monthStr];
+            if (monthNum) {
+                const daysFound = daysPart.match(/\d{1,2}/g);
+                if (daysFound) {
+                    daysFound.forEach(dStr => {
+                        const dayNum = parseInt(dStr, 10);
+                        if (dayNum >= 1 && dayNum <= 31) {
+                            const dayPadded = String(dayNum).padStart(2, '0');
+                            const iso = `${year}-${monthNum}-${dayPadded}`;
+                            if (!seenISO.has(iso)) {
+                                seenISO.add(iso);
+                                foundDates.push({ iso, day: dayNum, month: monthNum, year: String(year), raw: match[0] });
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        // 2. Day + Month (es: "7 Febbraio 2025", "07 Feb", "7th February")
+        const dayMonthRegex = /\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:di\s+)?([a-zà-ú]{3,10})(?:\s+(\d{4}))?\b/gi;
         while ((match = dayMonthRegex.exec(text)) !== null) {
             const dayNum = parseInt(match[1], 10);
             const monthStr = match[2].toLowerCase();
@@ -51,7 +78,7 @@ class AdminSmartParser {
             }
         }
 
-        // 2. Month + Day (es: "February 7", "Feb 7", "February 7 2025")
+        // 3. Month + Day (es: "February 7", "Feb 7", "February 7 2025")
         const monthDayRegex = /\b([a-zà-ú]{3,10})\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(\d{4}))?\b/gi;
         while ((match = monthDayRegex.exec(text)) !== null) {
             const monthStr = match[1].toLowerCase();
@@ -70,21 +97,35 @@ class AdminSmartParser {
             }
         }
 
-        // 3. Numeric Date (es: "07/02/2025", "7/2/25", "07-02-2025", "07.02.2025")
+        // 4. Numeric Date con riconoscimento intelligente DD/MM (es: "14/09/2026", "09/14/2026", "07/02/2025")
         const numDateRegex = /\b(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?\b/g;
         while ((match = numDateRegex.exec(text)) !== null) {
-            const dayNum = parseInt(match[1], 10);
-            const monthNum = String(parseInt(match[2], 10)).padStart(2, '0');
+            const p1 = parseInt(match[1], 10);
+            const p2 = parseInt(match[2], 10);
             let year = match[3] || currentYear;
             if (String(year).length === 2) year = '20' + year;
 
-            if (dayNum >= 1 && dayNum <= 31 && parseInt(monthNum, 10) >= 1 && parseInt(monthNum, 10) <= 12) {
-                const dayPadded = String(dayNum).padStart(2, '0');
-                const iso = `${year}-${monthNum}-${dayPadded}`;
-                if (!seenISO.has(iso)) {
-                    seenISO.add(iso);
-                    foundDates.push({ iso, day: dayNum, month: monthNum, year: String(year), raw: match[0] });
-                }
+            let dayNum = p1;
+            let monthVal = p2;
+
+            // Se p1 <= 12 e p2 > 12 (es: 09/14/2026), formato MM/DD -> p1 è Mese, p2 è Giorno
+            if (p1 <= 12 && p2 > 12 && p2 <= 31) {
+                dayNum = p2;
+                monthVal = p1;
+            } else if (p1 <= 31 && p2 <= 12) {
+                // Formato Italiano DD/MM (es: 14/09/2026 o 09/04/2026)
+                dayNum = p1;
+                monthVal = p2;
+            } else {
+                continue;
+            }
+
+            const monthNum = String(monthVal).padStart(2, '0');
+            const dayPadded = String(dayNum).padStart(2, '0');
+            const iso = `${year}-${monthNum}-${dayPadded}`;
+            if (!seenISO.has(iso)) {
+                seenISO.add(iso);
+                foundDates.push({ iso, day: dayNum, month: monthNum, year: String(year), raw: match[0] });
             }
         }
 
@@ -380,7 +421,12 @@ class AdminSmartParser {
                 }
             }
             const dateInput = document.getElementById('single-fixed-date-input');
-            if (dateInput) dateInput.value = data.singleFixedDate;
+            if (dateInput) {
+                dateInput.value = data.singleFixedDate;
+                if (typeof aggiornaEtichettaDataFissaLeggibile === 'function') {
+                    aggiornaEtichettaDataFissaLeggibile(data.singleFixedDate);
+                }
+            }
         } else {
             const radioWeekly = document.querySelector('input[name="availability-type"][value="weekly"]');
             if (radioWeekly) {

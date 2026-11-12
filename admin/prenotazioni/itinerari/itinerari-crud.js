@@ -115,6 +115,38 @@ function sincronizzaCheckBus(checked) {
     if (modalCheck) modalCheck.checked = checked;
 }
 
+function aggiornaEtichettaDataFissaLeggibile(isoStr) {
+    const badge = document.getElementById('single-fixed-date-readable');
+    if (!badge) return;
+
+    if (!isoStr) {
+        badge.style.display = 'none';
+        badge.textContent = '';
+        return;
+    }
+
+    const parts = String(isoStr).split('-');
+    if (parts.length === 3) {
+        const y = parts[0];
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+
+        const monthNamesIt = [
+            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+        ];
+
+        if (m >= 0 && m < 12 && d >= 1 && d <= 31) {
+            badge.textContent = `📅 Data confermata: ${d} ${monthNamesIt[m]} ${y}`;
+            badge.style.display = 'inline-block';
+            return;
+        }
+    }
+
+    badge.style.display = 'none';
+}
+window.aggiornaEtichettaDataFissaLeggibile = aggiornaEtichettaDataFissaLeggibile;
+
 function gestisciTipoDisponibilitaTour(type) {
     const boxDate = document.getElementById('box-single-fixed-date');
     if (!boxDate) return;
@@ -124,6 +156,9 @@ function gestisciTipoDisponibilitaTour(type) {
         boxDate.style.display = 'block';
         const dateInput = document.getElementById('single-fixed-date-input');
         if (dateInput) {
+            if (dateInput.value) {
+                aggiornaEtichettaDataFissaLeggibile(dateInput.value);
+            }
             setTimeout(() => dateInput.focus(), 100);
         }
     } else {
@@ -236,7 +271,9 @@ function preparaModifica(id) {
         gestisciTipoDisponibilitaTour(availType);
     }
     if (document.getElementById('single-fixed-date-input')) {
-        document.getElementById('single-fixed-date-input').value = item.singleFixedDate || '';
+        const val = item.singleFixedDate || '';
+        document.getElementById('single-fixed-date-input').value = val;
+        aggiornaEtichettaDataFissaLeggibile(val);
     }
     sincronizzaCheckBus(!!item.sharedBusCapacity);
     document.getElementById('featured').value = item.featured || 'false';
@@ -310,6 +347,7 @@ function resetForm() {
     }
     if (document.getElementById('single-fixed-date-input')) {
         document.getElementById('single-fixed-date-input').value = '';
+        aggiornaEtichettaDataFissaLeggibile('');
     }
     sincronizzaCheckBus(false);
     const fileInput = document.getElementById('image-file-input');
