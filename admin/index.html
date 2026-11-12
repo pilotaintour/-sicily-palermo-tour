@@ -290,6 +290,17 @@
                                 <div id="orari-active-chips" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 42px; padding: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px;">
                                     <!-- Popolato via JS -->
                                 </div>
+
+                                <!-- Aggiunta rapida orario manuale -->
+                                <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
+                                    <label style="font-size: 0.82rem; font-weight: 700; color: #1b4f72;">➕ Aggiungi Orario:</label>
+                                    <input type="time" id="nuovo-orario-input" value="09:00" style="padding: 6px 10px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-weight: bold; font-size: 0.9rem; color: #0b2545;">
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <input type="number" id="nuova-capienza-input" value="53" min="1" max="500" placeholder="Capienza" style="width: 65px; padding: 6px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-weight: bold; text-align: center; color: #0369a1; font-size: 0.9rem;">
+                                        <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">posti</span>
+                                    </div>
+                                    <button type="button" class="btn-secondary btn-small" onclick="aggiungiOrarioManuale()" style="background: #0284c7; color: white; border: none; font-weight: 700; padding: 7px 14px;">➕ Inserisci Orario</button>
+                                </div>
                             </div>
 
                             <!-- Sezione Foto (Upload Multiplo File + URL Web) -->
@@ -759,10 +770,10 @@
     <script src="../email/email-template.js?v=9999"></script>
     <script src="../email/email-service.js?v=9999"></script>
     <script src="../email/emailedit.js?v=9999"></script>
-    <script src="admin-smart-parser.js?v=9999"></script>
     <script src="prenotazioni/itinerari/punti-raccolta.js?v=9999"></script>
     <script src="prenotazioni/itinerari/orari.js?v=9999"></script>
     <script src="prenotazioni/itinerari/foto-tappe.js?v=9999"></script>
+    <script src="admin-smart-parser.js?v=9999"></script>
     <script src="prenotazioni/itinerari/itinerari-crud.js?v=9999"></script>
     <script src="admin-archivio.js?v=9999"></script>
     <script src="admin-prenotazioni.js?v=9999"></script>
