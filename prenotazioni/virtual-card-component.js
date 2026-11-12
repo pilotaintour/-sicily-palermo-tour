@@ -142,13 +142,6 @@ class VirtualCardComponent {
                             </div>
                         </div>
 
-                        <!-- Bottone Azione (Compilazione Carta di Test) -->
-                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px;">
-                            <button type="button" onclick="window.virtualCardComponent.autoCompilaTestCard()" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-                                ⚡ Inserisci Dati Carta di Test
-                            </button>
-                        </div>
-
                         <p style="font-size: 0.83rem; color: #64748b; margin-top: 12px; margin-bottom: 0; line-height: 1.4;">
                             🔒 L'importo verrà <strong>solo prenotato in sospeso</strong> (Pre-Autorizzazione) a garanzia del tour. Nessun addebito definitivo fino alla conferma!
                         </p>

@@ -230,12 +230,6 @@ class StripeClientCheckout {
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 14px;">
-                        <button type="button" onclick="if(window.stripeClientCheckout){ window.stripeClientCheckout.autoCompilaTestCard(); } else if(window.stripePayment){ window.stripePayment.autoCompilaTestCard(); }" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
-                            ⚡ Inserisci Dati Carta di Test
-                        </button>
-                    </div>
-
                     <p style="font-size: 0.83rem; color: #64748b; margin-top: 10px; margin-bottom: 0; line-height: 1.4;">
                         🔒 L'importo verrà <strong>solo prenotato in sospeso</strong> (Pre-Autorizzazione) a garanzia del tour. Nessun addebito definitivo fino alla conferma!
                     </p>
