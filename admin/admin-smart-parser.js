@@ -485,8 +485,52 @@ class AdminSmartParser {
             extractedTimeSlots.push({ time: '09:00', capacity: 53 });
         }
 
-        // 6. Estrazione Intelligente Programma e Tappe del Tour
-        const tappe = this.extractTappeFromText(fullText);
+        // 6. Estrazione Intelligente Servizi Inclusi & Caratteristiche dal testo
+        const servizi = [];
+        const lowerText = fullText.toLowerCase();
+
+        if (/\b(guida|guide|accompagnament)\b/.test(lowerText)) {
+            servizi.push('Guida Turistica Autorizzata');
+        }
+        if (/\b(accompagnator|tour leader)\b/.test(lowerText)) {
+            servizi.push('Accompagnatore Turistico / Leader');
+        }
+        if (/\b(degustazion|street food|assaggi|pranzo|cena|cibo|degustare|aperitiv|prodotti tipici)\b/.test(lowerText)) {
+            servizi.push('Degustazioni & Street Food');
+        }
+        if (/\b(ingress|bigliett|museo|monument|scavi|parco archeologico)\b/.test(lowerText)) {
+            servizi.push('Ingressi Monumenti e Musei');
+        }
+        if (/\b(auricolar|whisper|radioguid)\b/.test(lowerText)) {
+            servizi.push('Auricolari Radio Whisper');
+        }
+        if (/\b(bus|pullman|trasporto|transfer|navetta|autobus)\b/.test(lowerText)) {
+            servizi.push('Trasporto / Transfer Incluso');
+        }
+        if (/\b(assicurazion|polizza)\b/.test(lowerText)) {
+            servizi.push('Assicurazione Tour Inclusa');
+        }
+        if (/\b(whatsapp|assistenza)\b/.test(lowerText)) {
+            servizi.push('Assistenza Dedicata WhatsApp');
+        }
+        if (/\b(cancellazion|rimborso|gratuit)\b/.test(lowerText)) {
+            servizi.push('Cancellazione Gratuita');
+        }
+        if (/\b(famigli|bambin|ragazz)\b/.test(lowerText)) {
+            servizi.push('Adatto a Famiglie & Bambini');
+        }
+        if (/\b(disabil|sedia a rotelle|carrozzin|accessibil)\b/.test(lowerText)) {
+            servizi.push('Accessibile Sedia a Rotelle');
+        }
+        if (/\b(animal|cane|cani|pet)\b/.test(lowerText)) {
+            servizi.push('Pet Friendly (Animali Ammessi)');
+        }
+        if (/\b(camminat|facile|passeggiat)\b/.test(lowerText)) {
+            servizi.push('Camminata Facile Pianeggiante');
+        }
+        if (/\b(ingles|multilingua|english|lingua)\b/.test(lowerText)) {
+            servizi.push('Tour Multilingua (ITA/ENG)');
+        }
 
         // 7. Descrizione Breve e Completa
         const shortDesc = lines.slice(0, 3).join(' ').substring(0, 160) + '...';
@@ -502,7 +546,7 @@ class AdminSmartParser {
             activeWeekDays,
             pickupPoints,
             timeSlots: extractedTimeSlots,
-            tappe,
+            servizi,
             shortDesc,
             fullDesc
         };
@@ -609,6 +653,12 @@ class AdminSmartParser {
         if (typeof renderCampiOrari === 'function') {
             renderCampiOrari();
         }
+
+        // Servizi Inclusi & Caratteristiche Checkboxes
+        const serviziChecks = document.querySelectorAll('input[name="servizio-check"]');
+        serviziChecks.forEach(c => {
+            c.checked = (data.servizi && Array.isArray(data.servizi)) ? data.servizi.includes(c.value) : false;
+        });
 
         // Descrizioni
         const shortDescEl = document.getElementById('short-desc');

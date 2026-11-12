@@ -323,7 +323,7 @@ function preparaModifica(id) {
 
     const serviziChecks = document.querySelectorAll('input[name="servizio-check"]');
     serviziChecks.forEach(c => {
-        c.checked = item.servizi ? item.servizi.includes(c.value) : true;
+        c.checked = (item.servizi && Array.isArray(item.servizi)) ? item.servizi.includes(c.value) : false;
     });
 
     if (item.images && item.images.length > 0) {
@@ -379,6 +379,7 @@ function resetForm() {
     if (isAllaModaEl) isAllaModaEl.checked = false;
 
     puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
+    document.querySelectorAll('input[name="servizio-check"]').forEach(c => c.checked = false);
     renderCampiPuntiRaccolta();
     renderGalleriaAnteprima();
     renderCampiOrari();
