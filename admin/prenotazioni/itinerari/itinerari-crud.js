@@ -178,11 +178,8 @@ function gestisciTipoDisponibilitaTour(type) {
         boxDate.classList.remove('hidden');
         boxDate.style.display = 'block';
         const dateInput = document.getElementById('single-fixed-date-input');
-        if (dateInput) {
-            if (dateInput.value) {
-                aggiornaEtichettaDataFissaLeggibile(dateInput.value);
-            }
-            setTimeout(() => dateInput.focus(), 100);
+        if (dateInput && dateInput.value) {
+            aggiornaEtichettaDataFissaLeggibile(dateInput.value);
         }
     } else {
         boxDate.classList.add('hidden');

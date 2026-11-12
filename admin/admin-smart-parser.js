@@ -31,23 +31,33 @@ class AdminSmartParser {
         let str = String(rawPoint).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, ' ').trim();
         str = str.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
 
-        // Standardizza "ORE 09.00" o "ORE 09:00" -> "(Ore 09:00)"
-        str = str.replace(/\bore\s*([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/gi, (m, h, min) => `(Ore ${String(h).padStart(2, '0')}:${min})`);
-        str = str.replace(/\b([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/gi, (m, h, min) => `(Ore ${String(h).padStart(2, '0')}:${min})`);
-
-        // Espandi nomi noti per la Sicilia / Palermo
-        if (/^giotto\b/i.test(str)) {
-            str = str.replace(/^giotto\b/i, 'Piazzale Giotto');
-        } else if (/^politeama\b/i.test(str)) {
-            str = str.replace(/^politeama\b/i, 'Piazza Politeama');
-        } else if (/^villabate\b/i.test(str)) {
-            str = str.replace(/^villabate\b/i, 'Villabate');
-        } else if (/^bagheria\b/i.test(str)) {
-            str = str.replace(/^bagheria\b/i, 'Bagheria');
+        let timeFormatted = '';
+        const timeMatch = str.match(/\b(?:ore\s*)?([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/i);
+        if (timeMatch) {
+            const h = String(timeMatch[1]).padStart(2, '0');
+            const m = timeMatch[2];
+            timeFormatted = `(Ore ${h}:${m})`;
+            str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9][\.\:][0-5][0-9]\b/gi, '').trim();
         }
 
-        // Pulisci doppi spazi e formattazione
-        str = str.replace(/\s+/g, ' ').trim();
+        if (/^giotto\b/i.test(str)) {
+            str = 'Piazzale Giotto';
+        } else if (/^politeama\b/i.test(str)) {
+            str = 'Piazza Politeama';
+        } else if (/^villabate\b/i.test(str)) {
+            str = 'Villabate';
+        } else if (/^bagheria\b/i.test(str)) {
+            str = 'Bagheria';
+        }
+
+        str = str.replace(/^[:\s\*\-\)]+/, '').replace(/[:\s\*\-\(]+$/, '').trim();
+
+        if (timeFormatted) {
+            str = `${str} ${timeFormatted}`;
+        }
+
+        return str;
+    }
         return str;
     }
 
