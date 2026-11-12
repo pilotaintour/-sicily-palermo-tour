@@ -28,9 +28,15 @@ class AdminSmartParser {
 
     formatPickupPoint(rawPoint) {
         if (!rawPoint) return '';
+        // 1. Rimuovi emoticon e punteggiatura iniziale
         let str = String(rawPoint).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, ' ').trim();
         str = str.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
 
+        // 2. Rimuovi qualsiasi eventuale "(Ore (Ore ...))" o "(Ore ...)" preesistente
+        str = str.replace(/\(\s*ore\s*[^)]*\)/gi, ' ');
+        str = str.replace(/\s+/g, ' ').trim();
+
+        // 3. Estrai l'orario effettivo (es. "ORE 09.00" o "09:00" o "09.20")
         let timeFormatted = '';
         const timeMatch = str.match(/\b(?:ore\s*)?([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/i);
         if (timeMatch) {
@@ -40,6 +46,7 @@ class AdminSmartParser {
             str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9][\.\:][0-5][0-9]\b/gi, '').trim();
         }
 
+        // 4. Espandi nomi noti per la Sicilia / Palermo
         if (/^giotto\b/i.test(str)) {
             str = 'Piazzale Giotto';
         } else if (/^politeama\b/i.test(str)) {
@@ -310,10 +317,14 @@ class AdminSmartParser {
             activeWeekDays.push(dayOfWeek);
         }
 
-        // 5. Estrazione Punti di Raccolta e Orari (SOLO Luoghi Effettivi, ESCLUSI Termini/Rimborsi/Note)
+        // 5. Estrazione Punti di Raccolta e Orari (SOLO Luoghi Effettivi, ESCLUSI Termini/Rimborsi/Note/Date/Indirizzi Agenzia)
         const pickupPoints = [];
 
-        const excludeRegex = /garantit|raggiungiment|mancat|sostituzion|rimbors|penal|annullam|cancellaz|richiesta|programma|quota|prezzo|comprende|esclude|incluso|inclusi|raduno|regolament|nota\b|note\b|info\b|informazion|condizion|termini|sconto|commissione|organizzat|assicuraz/i;
+        // Parole/Frasi da escludere (termini, rimborsi, indirizzi agenzia, contatti)
+        const excludeRegex = /garantit|raggiungiment|mancat|sostituzion|rimbors|penal|annullam|cancellaz|richiesta|programma|quota|prezzo|comprende|esclude|incluso|inclusi|raduno|regolament|nota\b|note\b|info\b|informazion|condizion|termini|sconto|commissione|organizzat|assicuraz|bersagliere|pm eventi|agenzia|prenotazioni|telefono|tel\.|cell\./i;
+
+        // Mesi e Giorni per evitare che le righe di data dell'evento vengano scambiate per punti di partenza
+        const dateKeywordsRegex = /gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|domenica|sabato|venerdì|venerdi|giovedì|giovedi|mercoledì|mercoledi|martedì|martedi|lunedì|lunedi/i;
 
         const locationKeywordsRegex = /giotto|villabate|bagheria|politeama|cattedrale|teatro|massimo|stazione|porto|molo|aeroporto|sferracavallo|mondello|monreale|agrigento|catania|trapani|messina|siracusa|enna|caltanissetta|ragusa|piazza|piazzale|via\b|viale\b|corso\b|largo\b|svincolo|casello|distributore|hotel|bar\b|pasticceria|rotonda|pensilina|fermata/i;
 
@@ -323,10 +334,12 @@ class AdminSmartParser {
 
             const lower = line.toLowerCase();
 
-            if (excludeRegex.test(lower)) {
+            // 1. Salta se contiene regole, termini, indirizzi agenzia o date dell'evento
+            if (excludeRegex.test(lower) || dateKeywordsRegex.test(lower)) {
                 return;
             }
 
+            // 2. Salta intestazioni di sezione (es. "Punti di raccolta:", "Luoghi di partenza:", "Orari:")
             if (cleanLine.length < 3 || /^(punti|luoghi|orari|partenze|fermate|ritrovo|stoppings)(\s+di\s+raccolta|\s+di\s+partenza)?$/i.test(cleanLine)) {
                 return;
             }
@@ -337,7 +350,7 @@ class AdminSmartParser {
             if (containsPlaceKeyword || (containsTimePattern && (lower.includes('ore') || lower.includes('h')) && cleanLine.length < 60)) {
                 const formattedPoint = this.formatPickupPoint(line);
 
-                if (formattedPoint && formattedPoint.length > 3 && !excludeRegex.test(formattedPoint)) {
+                if (formattedPoint && formattedPoint.length > 3 && !excludeRegex.test(formattedPoint) && !dateKeywordsRegex.test(formattedPoint)) {
                     if (!pickupPoints.some(p => p.toLowerCase() === formattedPoint.toLowerCase())) {
                         pickupPoints.push(formattedPoint);
                     }
