@@ -115,8 +115,30 @@ function sincronizzaCheckBus(checked) {
     if (modalCheck) modalCheck.checked = checked;
 }
 
+function sincronizzaGiornoSettimanaDaDataFissa(isoStr) {
+    if (!isoStr) return;
+    const parts = String(isoStr).split('-');
+    if (parts.length === 3) {
+        const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const dayOfWeek = dt.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+        document.querySelectorAll('input[name="giorno-check"]').forEach(c => {
+            c.checked = (parseInt(c.value, 10) === dayOfWeek);
+        });
+        const checkAll = document.getElementById('check-all-days');
+        if (checkAll) checkAll.checked = false;
+    }
+}
+
 function aggiornaEtichettaDataFissaLeggibile(isoStr) {
     const badge = document.getElementById('single-fixed-date-readable');
+
+    if (isoStr) {
+        const availabilityTypeEl = document.querySelector('input[name="availability-type"]:checked');
+        if (availabilityTypeEl && availabilityTypeEl.value === 'singleDate') {
+            sincronizzaGiornoSettimanaDaDataFissa(isoStr);
+        }
+    }
+
     if (!badge) return;
 
     if (!isoStr) {
@@ -145,6 +167,7 @@ function aggiornaEtichettaDataFissaLeggibile(isoStr) {
 
     badge.style.display = 'none';
 }
+window.sincronizzaGiornoSettimanaDaDataFissa = sincronizzaGiornoSettimanaDaDataFissa;
 window.aggiornaEtichettaDataFissaLeggibile = aggiornaEtichettaDataFissaLeggibile;
 
 function gestisciTipoDisponibilitaTour(type) {

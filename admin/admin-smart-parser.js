@@ -268,14 +268,11 @@ class AdminSmartParser {
             availabilityType = 'singleDate';
             singleFixedDate = extractedDates[0].iso;
 
-            extractedDates.forEach(d => {
-                const parts = d.iso.split('-');
-                const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                const dayOfWeek = dt.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
-                if (!activeWeekDays.includes(dayOfWeek)) {
-                    activeWeekDays.push(dayOfWeek);
-                }
-            });
+            // Per la data fissa evento unico, seleziona SOLO il singolo giorno della settimana della data scelta
+            const parts = singleFixedDate.split('-');
+            const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const dayOfWeek = dt.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+            activeWeekDays.push(dayOfWeek);
         }
 
         // 5. Estrazione Punti di Raccolta e Orari (SOLO Luoghi Effettivi, ESCLUSI Termini/Rimborsi/Note)
