@@ -20,16 +20,19 @@ const PALERMO_AUTOCOMPLETE_PLACES = [
 ];
 
 let autocompleteTimer = null;
+if (typeof window.puntiRaccoltaCorrenti === 'undefined') {
+    window.puntiRaccoltaCorrenti = ['Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)'];
+}
 
 function renderCampiPuntiRaccolta() {
     const container = document.getElementById('punti-raccolta-container');
     if (!container) return;
 
-    if (!Array.isArray(puntiRaccoltaCorrenti) || puntiRaccoltaCorrenti.length === 0) {
-        puntiRaccoltaCorrenti = ['Piazzale Giotto'];
+    if (!Array.isArray(window.puntiRaccoltaCorrenti) || window.puntiRaccoltaCorrenti.length === 0) {
+        window.puntiRaccoltaCorrenti = ['Piazzale Giotto'];
     }
 
-    container.innerHTML = puntiRaccoltaCorrenti.map((punto, index) => {
+    container.innerHTML = window.puntiRaccoltaCorrenti.map((punto, index) => {
         const valAttr = String(punto || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         return `
         <div style="position: relative; display: flex; align-items: center; gap: 8px;">

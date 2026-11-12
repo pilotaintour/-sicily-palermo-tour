@@ -493,27 +493,29 @@ class AdminSmartParser {
         }
 
         // Punti di Raccolta Dinamici (FORZATI SULL'ARRAY GLOBALE ED AGGIORNAMENTO RENDERING)
-        if (typeof puntiRaccoltaCorrenti !== 'undefined') {
-            puntiRaccoltaCorrenti.length = 0;
-            if (data.pickupPoints && data.pickupPoints.length > 0) {
-                data.pickupPoints.forEach(pt => puntiRaccoltaCorrenti.push(pt));
-            } else {
-                puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 10:00)', 'Villabate (Ore 10:20)', 'Bagheria (Ore 10:40)');
-            }
-            if (typeof renderCampiPuntiRaccolta === 'function') {
-                renderCampiPuntiRaccolta();
-            }
+        if (!window.puntiRaccoltaCorrenti || !Array.isArray(window.puntiRaccoltaCorrenti)) {
+            window.puntiRaccoltaCorrenti = [];
+        }
+        window.puntiRaccoltaCorrenti.length = 0;
+        if (data.pickupPoints && data.pickupPoints.length > 0) {
+            data.pickupPoints.forEach(pt => window.puntiRaccoltaCorrenti.push(pt));
+        } else {
+            window.puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)');
+        }
+        if (typeof renderCampiPuntiRaccolta === 'function') {
+            renderCampiPuntiRaccolta();
         }
 
         // Tappe
-        if (typeof tappeCorrenti !== 'undefined') {
-            tappeCorrenti.length = 0;
-            if (data.tappe && data.tappe.length > 0) {
-                data.tappe.forEach(t => tappeCorrenti.push(t));
-            }
-            if (typeof renderCampiTappe === 'function') {
-                renderCampiTappe();
-            }
+        if (!window.tappeCorrenti || !Array.isArray(window.tappeCorrenti)) {
+            window.tappeCorrenti = [];
+        }
+        window.tappeCorrenti.length = 0;
+        if (data.tappe && data.tappe.length > 0) {
+            data.tappe.forEach(t => window.tappeCorrenti.push(t));
+        }
+        if (typeof renderCampiTappe === 'function') {
+            renderCampiTappe();
         }
 
         // Capienza Bus Condivisa (Attiva per default per Bus da 53 posti)
@@ -526,16 +528,17 @@ class AdminSmartParser {
         }
 
         // Capienza fissa 53 posti per TUTTI gli orari estratti dal testo
-        if (typeof orariCorrenti !== 'undefined') {
-            orariCorrenti.length = 0;
-            if (data.timeSlots && data.timeSlots.length > 0) {
-                data.timeSlots.forEach(slot => orariCorrenti.push({ time: slot.time, capacity: slot.capacity || 53 }));
-            } else {
-                orariCorrenti.push({ time: '10:00', capacity: 53 });
-            }
-            if (typeof renderCampiOrari === 'function') {
-                renderCampiOrari();
-            }
+        if (!window.orariCorrenti || !Array.isArray(window.orariCorrenti)) {
+            window.orariCorrenti = [];
+        }
+        window.orariCorrenti.length = 0;
+        if (data.timeSlots && data.timeSlots.length > 0) {
+            data.timeSlots.forEach(slot => window.orariCorrenti.push({ time: slot.time, capacity: slot.capacity || 53 }));
+        } else {
+            window.orariCorrenti.push({ time: '09:00', capacity: 53 });
+        }
+        if (typeof renderCampiOrari === 'function') {
+            renderCampiOrari();
         }
 
         // Descrizioni
