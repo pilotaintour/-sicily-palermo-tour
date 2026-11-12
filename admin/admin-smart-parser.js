@@ -65,7 +65,71 @@ class AdminSmartParser {
 
         return str;
     }
-        return str;
+
+    extractTappeFromText(text) {
+        const tappe = [];
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+        let inProgramma = false;
+        let programmaText = '';
+
+        lines.forEach(line => {
+            const upper = line.toUpperCase();
+            if (upper.includes('PROGRAMMA') || upper.includes('ITINERARIO') || upper.includes('TAPPE')) {
+                inProgramma = true;
+                return;
+            }
+            if (inProgramma) {
+                if (/COMPRENDE|QUOTA|NOTE|INFORMAZIONI|PRENOTAZIONI|SERVIZI|CONTATTI/i.test(line)) {
+                    inProgramma = false;
+                    return;
+                }
+                programmaText += ' ' + line;
+            }
+        });
+
+        if (programmaText.trim()) {
+            const splitPattern = /(?:\.|\n|(?=\b(?:raduno|partenza|arrivo|visita|pranzo|pomeriggio|ingresso|sosta|al termine|rientro)\b))/gi;
+            const rawSentences = programmaText.split(splitPattern);
+
+            rawSentences.forEach(s => {
+                let clean = s.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-\d+\.]/gu, ' ').trim();
+                clean = clean.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
+                if (clean.length >= 12 && clean.length <= 150 && !/€|euro|334|091|quota|include|comprende/i.test(clean)) {
+                    clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+                    if (!tappe.includes(clean)) {
+                        tappe.push(clean);
+                    }
+                }
+            });
+        }
+
+        if (tappe.length === 0) {
+            lines.forEach(line => {
+                if (/^[\d+\.\-\*•👉📍]\s*/.test(line)) {
+                    let clean = line.replace(/^[\d+\.\-\*•👉📍\s]+/, '').trim();
+                    clean = clean.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                    if (clean.length >= 12 && clean.length <= 120 && !/quota|comprend|prezzo|euro|€|info|tel/i.test(clean)) {
+                        clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+                        if (!tappe.includes(clean)) {
+                            tappe.push(clean);
+                        }
+                    }
+                }
+            });
+        }
+
+        if (tappe.length === 0) {
+            tappe.push(
+                'Raduno dei partecipanti nei punti di raccolta e partenza in Bus GT',
+                'Visita guidata ai principali monumenti e punti d’interesse',
+                'Pranzo e tempo libero a disposizione dei partecipanti',
+                'Pomeriggio dedicato alle attività ed attrazioni del programma',
+                'Ritrovo dei partecipanti e partenza per il viaggio di rientro'
+            );
+        }
+
+        return tappe.slice(0, 6);
     }
 
     extractDatesFromText(text) {
@@ -405,30 +469,8 @@ class AdminSmartParser {
             extractedTimeSlots.push({ time: '10:00', capacity: 53 });
         }
 
-        // 6. Estrazione Programma e Tappe
-        const tappe = [];
-        let inProgramma = false;
-        lines.forEach(line => {
-            if (line.toUpperCase().includes('PROGRAMMA:')) {
-                inProgramma = true;
-                return;
-            }
-            if (inProgramma) {
-                let cleanTappa = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-                if (cleanTappa.length > 10 && !cleanTappa.includes('€') && !cleanTappa.includes('393')) {
-                    tappe.push(cleanTappa);
-                }
-            }
-        });
-
-        if (tappe.length === 0) {
-            tappe.push(
-                'Incontro nei punti di raccolta e partenza in Bus GT',
-                'Sosta all’IKEA di Catania e tempo libero per lo shopping',
-                'Pomeriggio al famoso Carnevale di Misterbianco tra sfilate e maschere',
-                'Ritrovo dei partecipanti e partenza per il viaggio di rientro'
-            );
-        }
+        // 6. Estrazione Intelligente Programma e Tappe del Tour
+        const tappe = this.extractTappeFromText(fullText);
 
         // 7. Descrizione Breve e Completa
         const shortDesc = lines.slice(0, 3).join(' ').substring(0, 160) + '...';
