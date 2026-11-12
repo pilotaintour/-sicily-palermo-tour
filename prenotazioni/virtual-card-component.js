@@ -1,6 +1,6 @@
 /**
- * MODULO SEPARATO: VIRTUAL CREDIT CARD (FRONT & BACK 3D FLIP)
- * Sicily Palermo Tour - Componente Carta di Credito con Vista Fronte e Retro
+ * MODULO CARTA DI CREDITO: VISTA UNICA SULLA FACCIATA PRINCIPALE (CONCISA E AD ALTO CONTRASTO)
+ * Sicily Palermo Tour - Tutti i campi (Numero, Intestatario, Scadenza, CVC) in un'unica facciata leggibile
  */
 
 class VirtualCardComponent {
@@ -17,90 +17,55 @@ class VirtualCardComponent {
         const html = `
             <div class="vcard-wrapper-main">
                 <style>
-                    .vcard-perspective-container {
-                        perspective: 1000px;
-                        max-width: 480px;
-                        margin: 0 auto 22px auto;
-                    }
-                    .vcard-flipper {
-                        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-                        transform-style: preserve-3d;
-                        position: relative;
-                        width: 100%;
-                        min-height: 270px;
-                    }
-                    .vcard-flipper.flipped {
-                        transform: rotateY(180deg);
-                    }
-                    .vcard-front, .vcard-back {
-                        backface-visibility: hidden;
-                        -webkit-backface-visibility: hidden;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
+                    .vcard-single-front {
+                        background: linear-gradient(135deg, #0b2545 0%, #1e293b 50%, #0f172a 100%);
                         border-radius: 20px;
-                        box-sizing: border-box;
                         padding: 24px;
                         color: #ffffff;
                         box-shadow: 0 16px 36px rgba(15, 23, 42, 0.35);
-                        border: 1px solid rgba(255,255,255,0.18);
-                    }
-                    .vcard-front {
-                        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0b2545 100%);
-                        z-index: 2;
-                        transform: rotateY(0deg);
-                    }
-                    .vcard-back {
-                        background: linear-gradient(135deg, #0b2545 0%, #1e293b 50%, #0f172a 100%);
-                        transform: rotateY(180deg);
-                        padding: 0;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                    }
-                    .vcard-input-field {
-                        background: rgba(255, 255, 255, 0.12) !important;
-                        border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
-                        border-radius: 10px;
-                        color: #ffffff !important;
-                        -webkit-text-fill-color: #ffffff !important;
-                        font-family: monospace;
-                        font-weight: 700;
-                        font-size: 1.05rem;
-                        padding: 10px 14px;
-                        width: 100%;
+                        border: 1px solid rgba(255, 255, 255, 0.18);
+                        max-width: 500px;
+                        margin: 0 auto 18px auto;
                         box-sizing: border-box;
-                        outline: none;
-                        transition: border-color 0.2s ease, background-color 0.2s ease;
                     }
+
+                    .vcard-input-field {
+                        background: #ffffff !important;
+                        border: 1.5px solid #cbd5e1 !important;
+                        border-radius: 10px !important;
+                        color: #0f172a !important;
+                        -webkit-text-fill-color: #0f172a !important;
+                        font-family: monospace, sans-serif !important;
+                        font-weight: 700 !important;
+                        font-size: 1.05rem !important;
+                        padding: 10px 12px !important;
+                        width: 100% !important;
+                        box-sizing: border-box !important;
+                        outline: none !important;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.06) !important;
+                        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+                    }
+
                     .vcard-input-field:focus {
                         border-color: #38bdf8 !important;
-                        background: rgba(255, 255, 255, 0.18) !important;
-                        box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+                        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4) !important;
+                        background: #ffffff !important;
                     }
+
                     .vcard-input-field::placeholder {
                         color: #94a3b8 !important;
                         -webkit-text-fill-color: #94a3b8 !important;
+                        opacity: 1 !important;
                     }
-                    .vcard-btn-flip {
-                        background: rgba(255, 255, 255, 0.15);
-                        border: 1px solid rgba(255, 255, 255, 0.3);
-                        color: #ffffff;
-                        padding: 5px 12px;
-                        border-radius: 20px;
-                        font-size: 0.78rem;
-                        font-weight: 700;
-                        cursor: pointer;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 6px;
-                        transition: all 0.2s ease;
-                    }
-                    .vcard-btn-flip:hover {
-                        background: rgba(255, 255, 255, 0.25);
-                        border-color: #ffffff;
+
+                    .vcard-input-field:-webkit-autofill,
+                    .vcard-input-field:-webkit-autofill:hover,
+                    .vcard-input-field:-webkit-autofill:focus,
+                    .vcard-input-field:-webkit-autofill:active {
+                        -webkit-box-shadow: 0 0 0 100px #ffffff inset !important;
+                        -webkit-text-fill-color: #0f172a !important;
+                        color: #0f172a !important;
+                        transition: background-color 50000s ease-in-out 0s !important;
                     }
                 </style>
 
@@ -140,86 +105,46 @@ class VirtualCardComponent {
                         </label>
                     </div>
 
-                    <!-- CONTENITORE CARTA DI CREDITO -->
+                    <!-- CONTENITORE CARTA DI CREDITO (UNICA FACCIATA PRINCIPALE) -->
                     <div id="box-metodo-card" style="display: block; background: #fafcfd; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px;">
 
-                        <!-- VIRTUAL CARD CONTAINER (3D FLIP CONTAINER) -->
-                        <div class="vcard-perspective-container">
-                            <div id="vcard-flipper-element" class="vcard-flipper">
-
-                                <!-- FRONTE DELLA CARTA (FRONT) -->
-                                <div class="vcard-front">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                        <div class="virtual-card-chip" style="width: 44px; height: 32px; background: linear-gradient(135deg, #fef08a 0%, #d97706 100%); border-radius: 6px; box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.2);"></div>
-                                        <div style="display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-size: 1.2rem; opacity: 0.9;">📶</span>
-                                            <button type="button" class="vcard-btn-flip" onclick="window.virtualCardComponent.flipCard(true)" title="Gira la carta sul retro per inserire il CVC">
-                                                🔄 Retro CVC →
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Numero Carta -->
-                                    <div style="margin-bottom: 16px;">
-                                        <label style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">💳 NUMERO CARTA *</label>
-                                        <input type="text" id="vcard-number-input" class="vcard-input-field" placeholder="4242 4242 4242 4242" maxlength="19" autocomplete="cc-number">
-                                    </div>
-
-                                    <!-- Intestatario & Scadenza -->
-                                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; align-items: flex-end;">
-                                        <div>
-                                            <label style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">👤 INTESTATARIO *</label>
-                                            <input type="text" id="vcard-name-input" class="vcard-input-field" placeholder="MARIO ROSSI" style="text-transform: uppercase;" autocomplete="cc-name">
-                                        </div>
-                                        <div>
-                                            <label style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; display: block; margin-bottom: 4px;">⏳ SCADENZA *</label>
-                                            <input type="text" id="vcard-expiry-input" class="vcard-input-field" placeholder="12/28" maxlength="5" autocomplete="cc-exp">
-                                        </div>
-                                    </div>
+                        <div class="vcard-single-front">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="virtual-card-chip" style="width: 44px; height: 32px; background: linear-gradient(135deg, #fef08a 0%, #d97706 100%); border-radius: 6px; box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.2);"></div>
+                                    <span style="font-size: 1.1rem; opacity: 0.9;">📶</span>
                                 </div>
-
-                                <!-- RETRO DELLA CARTA (BACK) -->
-                                <div class="vcard-back">
-                                    <!-- Banda Magnetica Nera -->
-                                    <div style="background: #000000; height: 48px; width: 100%; margin-top: 20px;"></div>
-
-                                    <!-- Sezione Firma & Codice CVC / CVV -->
-                                    <div style="padding: 16px 24px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                            <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">🔒 CODICE DI SICUREZZA CVC / CVV *</span>
-                                            <button type="button" class="vcard-btn-flip" onclick="window.virtualCardComponent.flipCard(false)">
-                                                ← 🔄 Fronte Carta
-                                            </button>
-                                        </div>
-
-                                        <div style="display: flex; align-items: center; gap: 12px;">
-                                            <div style="flex: 1; background: #ffffff; height: 40px; border-radius: 6px; display: flex; align-items: center; padding-left: 12px; background-image: repeating-linear-gradient(45deg, #e2e8f0 0, #e2e8f0 10px, #ffffff 10px, #ffffff 20px);">
-                                                <span style="font-family: cursive; color: #64748b; font-size: 0.9rem; font-weight: bold;">Firma Autorizzata</span>
-                                            </div>
-                                            <div style="width: 90px;">
-                                                <input type="text" id="vcard-cvc-input" class="vcard-input-field" placeholder="123" maxlength="4" style="text-align: center; font-size: 1.1rem;" autocomplete="cc-csc">
-                                            </div>
-                                        </div>
-                                        <p style="font-size: 0.72rem; color: #94a3b8; margin-top: 8px; margin-bottom: 0;">
-                                            * Il CVC / CVV sono le 3 cifre sul retro della carta di credito.
-                                        </p>
-                                    </div>
-
-                                    <div style="padding: 10px 24px 16px 24px; text-align: right;">
-                                        <span style="font-size: 0.75rem; color: #64748b;">Sicily Palermo Tour • Secure SSL</span>
-                                    </div>
+                                <div style="font-weight: 800; font-size: 0.82rem; letter-spacing: 1px; color: #93c5fd; text-transform: uppercase;">
+                                    Carta di Credito / Debito
                                 </div>
+                            </div>
 
+                            <!-- NUMERO CARTA -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: #cbd5e1; font-weight: 700; display: block; margin-bottom: 6px;">💳 NUMERO CARTA *</label>
+                                <input type="text" id="vcard-number-input" class="vcard-input-field" placeholder="4242 4242 4242 4242" maxlength="19" autocomplete="cc-number">
+                            </div>
+
+                            <!-- INTESTATARIO, SCADENZA, CVC TUTTI SULLA FRONTE -->
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: flex-end;">
+                                <div>
+                                    <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: #cbd5e1; font-weight: 700; display: block; margin-bottom: 6px;">👤 INTESTATARIO *</label>
+                                    <input type="text" id="vcard-name-input" class="vcard-input-field" placeholder="MARIO ROSSI" style="text-transform: uppercase;" autocomplete="cc-name">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: #cbd5e1; font-weight: 700; display: block; margin-bottom: 6px;">⏳ SCADENZA *</label>
+                                    <input type="text" id="vcard-expiry-input" class="vcard-input-field" placeholder="12/28" maxlength="5" autocomplete="cc-exp">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: #cbd5e1; font-weight: 700; display: block; margin-bottom: 6px;">🔒 CVC / CVV *</label>
+                                    <input type="text" id="vcard-cvc-input" class="vcard-input-field" placeholder="123" maxlength="4" style="text-align: center;" autocomplete="cc-csc">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Bottoni Azione (Compilazione Carta di Test) -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 14px;">
-                            <button type="button" onclick="window.virtualCardComponent.flipCard()" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 7px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-                                🔄 Gira Carta (Fronte / Retro)
-                            </button>
-
-                            <button type="button" onclick="window.virtualCardComponent.autoCompilaTestCard()" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 7px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+                        <!-- Bottone Azione (Compilazione Carta di Test) -->
+                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px;">
+                            <button type="button" onclick="window.virtualCardComponent.autoCompilaTestCard()" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
                                 ⚡ Inserisci Dati Carta di Test
                             </button>
                         </div>
@@ -274,7 +199,6 @@ class VirtualCardComponent {
                 e.target.value = formatted;
                 syncLegacy();
             });
-            numEl.addEventListener('focus', () => this.flipCard(false));
         }
 
         if (expEl) {
@@ -287,11 +211,9 @@ class VirtualCardComponent {
                 }
                 syncLegacy();
             });
-            expEl.addEventListener('focus', () => this.flipCard(false));
         }
 
         if (cvcEl) {
-            cvcEl.addEventListener('focus', () => this.flipCard(true));
             cvcEl.addEventListener('input', (e) => {
                 e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
                 syncLegacy();
@@ -299,28 +221,12 @@ class VirtualCardComponent {
         }
 
         if (nameEl) {
-            nameEl.addEventListener('focus', () => this.flipCard(false));
             nameEl.addEventListener('input', () => syncLegacy());
         }
     }
 
-    flipCard(toBack = null) {
-        const flipper = document.getElementById('vcard-flipper-element');
-        if (!flipper) return;
-
-        if (toBack === true) {
-            this.isFlipped = true;
-        } else if (toBack === false) {
-            this.isFlipped = false;
-        } else {
-            this.isFlipped = !this.isFlipped;
-        }
-
-        if (this.isFlipped) {
-            flipper.classList.add('flipped');
-        } else {
-            flipper.classList.remove('flipped');
-        }
+    flipCard() {
+        return;
     }
 
     selezionaMetodo(tipo) {
@@ -368,8 +274,6 @@ class VirtualCardComponent {
     }
 
     autoCompilaTestCard() {
-        this.flipCard(false);
-
         const numEl = document.getElementById('vcard-number-input');
         const nameEl = document.getElementById('vcard-name-input');
         const expEl = document.getElementById('vcard-expiry-input');
