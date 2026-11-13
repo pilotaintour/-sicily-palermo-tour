@@ -19,14 +19,6 @@ if (!window.orariCorrenti || !Array.isArray(window.orariCorrenti)) {
     window.orariCorrenti = [{ time: '09:00', capacity: 53 }];
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('modal-tabella-orari');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-    }
-});
-
 function apriModalTabellaOrari() {
     const modal = document.getElementById('modal-tabella-orari');
     if (modal) {

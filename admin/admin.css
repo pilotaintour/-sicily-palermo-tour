@@ -246,24 +246,13 @@ body {
 }
 
 .form-group input:not([type="checkbox"]):not([type="radio"]),
-.form-group select {
+.form-group select,
+.form-group textarea {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 0.95rem;
-    transition: border-color 0.2s;
-    background-color: #fafafa;
-}
-
-.form-group textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1.05rem;
-    line-height: 1.5;
-    font-weight: 500;
     transition: border-color 0.2s;
     background-color: #fafafa;
 }
@@ -567,12 +556,6 @@ input[type="radio"] {
     justify-content: center;
     align-items: center;
     padding: 20px;
-}
-
-.modal-overlay.hidden {
-    display: none !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
 }
 
 .modal-content {

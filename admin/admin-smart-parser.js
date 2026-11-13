@@ -32,24 +32,36 @@ class AdminSmartParser {
         let str = String(rawPoint).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, ' ').trim();
         str = str.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
 
-        // 2. Rimuovi qualsiasi orario o dicitura "(Ore ...)" per lasciare SOLO il luogo pulito
+        // 2. Rimuovi qualsiasi eventuale "(Ore (Ore ...))" o "(Ore ...)" preesistente
         str = str.replace(/\(\s*ore\s*[^)]*\)/gi, ' ');
-        str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9][\.\:][0-5][0-9]\b/gi, ' ');
-        str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9]\b(?=\s*(?:am|pm|h))/gi, ' ');
         str = str.replace(/\s+/g, ' ').trim();
 
-        // 3. Espandi nomi noti per la Sicilia / Palermo
-        if (/giotto/i.test(str)) {
+        // 3. Estrai l'orario effettivo (es. "ORE 09.00" o "09:00" o "09.20")
+        let timeFormatted = '';
+        const timeMatch = str.match(/\b(?:ore\s*)?([0-1]?[0-9]|2[0-3])[\.\:]([0-5][0-9])\b/i);
+        if (timeMatch) {
+            const h = String(timeMatch[1]).padStart(2, '0');
+            const m = timeMatch[2];
+            timeFormatted = `(Ore ${h}:${m})`;
+            str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9][\.\:][0-5][0-9]\b/gi, '').trim();
+        }
+
+        // 4. Espandi nomi noti per la Sicilia / Palermo
+        if (/^giotto\b/i.test(str)) {
             str = 'Piazzale Giotto';
-        } else if (/politeama/i.test(str)) {
+        } else if (/^politeama\b/i.test(str)) {
             str = 'Piazza Politeama';
-        } else if (/villabate/i.test(str)) {
+        } else if (/^villabate\b/i.test(str)) {
             str = 'Villabate';
-        } else if (/bagheria/i.test(str)) {
+        } else if (/^bagheria\b/i.test(str)) {
             str = 'Bagheria';
         }
 
         str = str.replace(/^[:\s\*\-\)]+/, '').replace(/[:\s\*\-\(]+$/, '').trim();
+
+        if (timeFormatted) {
+            str = `${str} ${timeFormatted}`;
+        }
 
         return str;
     }
@@ -258,10 +270,7 @@ class AdminSmartParser {
 
     autoCompilaForm() {
         const textarea = document.getElementById('smart-parser-input');
-        if (!textarea) {
-            alert('⚠️ Impossibile trovare la casella di testo dello Smart Parser.');
-            return;
-        }
+        if (!textarea) return;
 
         const rawText = textarea.value.trim();
         if (!rawText) {
@@ -272,9 +281,7 @@ class AdminSmartParser {
         try {
             const parsed = this.parseText(rawText);
             this.applicaCampiForm(parsed);
-
-            const timeSlots = parsed.timeSlots || [{ time: '09:00', capacity: 53 }];
-            const orariStr = timeSlots.map(s => `${s.time} (53p)`).join(', ');
+            const orariStr = parsed.timeSlots.map(s => `${s.time} (53p)`).join(', ');
 
             let dateMsg = '';
             if (parsed.extractedDates && parsed.extractedDates.length > 1) {
@@ -287,12 +294,10 @@ class AdminSmartParser {
                 dateMsg = `🗓️ Nessuna data specifica trovata nel testo (Disponibilità settimanale)`;
             }
 
-            const pickupPoints = parsed.pickupPoints || ['Piazzale Giotto', 'Villabate'];
-
-            alert(`✨ Modulo auto-compilato con successo!\n\n${dateMsg}\n\n📍 Estratte ${pickupPoints.length} fermate:\n- ${pickupPoints.join('\n- ')}\n\n⏰ Estratti ${timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi prima di salvare.`);
+            alert(`✨ Modulo auto-compilato con successo!\n\n${dateMsg}\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\n⏰ Estratti ${parsed.timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi e carica la locandina prima di salvare.`);
         } catch (err) {
             console.error('Errore durante l\'auto-compilazione:', err);
-            alert('⚠️ Si è verificato un errore durante l\'analisi del testo: ' + (err.message || err));
+            alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
         }
     }
 
@@ -418,7 +423,7 @@ class AdminSmartParser {
         });
 
         if (pickupPoints.length === 0) {
-            pickupPoints.push('Piazzale Giotto', 'Villabate', 'Bagheria');
+            pickupPoints.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)', 'Bagheria (Ore 09:40)');
         }
 
         // 5b. Estrazione Orari Dinamici nel testo (con capienza predefinita di 53 posti)
@@ -620,7 +625,7 @@ class AdminSmartParser {
         if (data.pickupPoints && data.pickupPoints.length > 0) {
             data.pickupPoints.forEach(pt => window.puntiRaccoltaCorrenti.push(pt));
         } else {
-            window.puntiRaccoltaCorrenti.push('Piazzale Giotto', 'Villabate');
+            window.puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)');
         }
         if (typeof renderCampiPuntiRaccolta === 'function') {
             renderCampiPuntiRaccolta();
