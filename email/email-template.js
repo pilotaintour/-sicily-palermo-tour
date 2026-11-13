@@ -21,7 +21,7 @@ const i18nEmail = {
         children: "Bambini",
         totalLabel: "Totale in Pre-Autorizzazione:",
         instructionsTitle: "🎒 Istruzioni & Raccomandazioni Tour:",
-        instructions: "📍 Vi preghiamo di arrivare 10 minuti prima dell'orario previsto al punto d'incontro. Consigliamo scarpe comode e macchina fotografica.",
+        instructions: "📍 Vi preghiamo di arrivare 10 minuti prima dell'orario previsto al punto d'incontro. Consigliamo scarpe comode e macchina fotografica. Non sono previste riduzioni o rimborsi nel caso in cui il tour si svolga in presenza di condizioni meteorologiche avverse.",
         helpTitle: "💬 Hai domande o bisogno di assistenza in privato?",
         helpText: "Se hai qualsiasi dubbio, comunica all'amministratore il tuo **Codice** oppure il **Riferimento Transazione**:",
         helpBtn: "💬 Contatta l'Admin su WhatsApp (+39 340 1234567)",

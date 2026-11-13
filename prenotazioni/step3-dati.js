@@ -231,15 +231,23 @@ class Step3Dati {
         html += `
             <!-- ACCETTAZIONE TERMINI E CONDIZIONI & REGOLAMENTO PENALI -->
             <div id="step3-terms-card" style="background: #fafcfd; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 18px; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-                <!-- Avviso Garanzia Annullamento per Mancato Raggiungimento Quota -->
-                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.88rem; color: #0369a1; line-height: 1.5;">
-                    ℹ️ <strong>Garanzia Annullamento & Rimborso 100%:</strong> In caso di mancato raggiungimento del numero minimo di partecipanti o per motivi organizzativi/meteo, la gita potrà essere annullata da parte nostra con <strong>restituzione immediata ed integrale del 100% dell'importo versato</strong>, senza alcuna penale o trattenuta.
+                <!-- Avviso Condizioni Contrattuali -->
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 14px; margin-bottom: 14px; font-size: 0.88rem; color: #0b2545; line-height: 1.5;">
+                    <div style="font-weight: 800; color: #0369a1; font-size: 0.95rem; margin-bottom: 8px;">📋 Condizioni del Contratto di Partecipazione:</div>
+                    <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: #334155; font-size: 0.85rem;">
+                        <li>Con il versamento della quota il partecipante dichiara di accettare ogni singolo punto del contratto e del programma.</li>
+                        <li>Non sono previste riduzioni o rimborsi in caso di condizioni meteorologiche avverse.</li>
+                        <li>Non è ammesso alcun cambio data una volta versata la quota e la quota non è rimborsabile.</li>
+                        <li>È ammessa la sostituzione del partecipante anche la mattina stessa della partenza (esclusi i voli in aereo).</li>
+                        <li>L'azienda si solleva da ogni responsabilità in caso di rifiuto dell'assicurazione medico/bagaglio o annullamento.</li>
+                        <li>Il partecipante è tenuto a rispettare orari e punti di ritrovo. In caso di ritardo o mancata presentazione gli accompagnatori non sono tenuti ad aspettare e non è previsto alcun rimborso.</li>
+                    </ul>
                 </div>
 
                 <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; font-size: 0.92rem; color: #0b2545; font-weight: 700;">
                     <input type="checkbox" id="step3-terms-check" style="width: 22px; height: 22px; accent-color: #0b2545; margin-top: 2px; cursor: pointer;">
                     <span style="line-height: 1.5;">
-                        Dichiaro di aver letto ed accetto integralmente i <a href="termini-condizioni.html" target="_blank" onclick="window.open('termini-condizioni.html', '_blank', 'width=800,height=750'); return false;" style="color: #0369a1; text-decoration: underline; font-weight: 800;">Termini e Condizioni di Servizio</a>, il <a href="termini-condizioni.html" target="_blank" onclick="window.open('termini-condizioni.html', '_blank', 'width=800,height=750'); return false;" style="color: #d97706; text-decoration: underline; font-weight: 800;">Regolamento Penali di Cancellazione</a> e l'Informativa sulla Privacy *
+                        Dichiaro di aver letto ed accetto integralmente i <a href="termini-condizioni.html" target="_blank" onclick="window.open('termini-condizioni.html', '_blank', 'width=800,height=750'); return false;" style="color: #0369a1; text-decoration: underline; font-weight: 800;">Termini e Condizioni di Servizio</a>, le <a href="termini-condizioni.html" target="_blank" onclick="window.open('termini-condizioni.html', '_blank', 'width=800,height=750'); return false;" style="color: #d97706; text-decoration: underline; font-weight: 800;">Condizioni Contrattuali</a> e l'Informativa sulla Privacy *
                     </span>
                 </label>
             </div>
