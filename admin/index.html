@@ -83,7 +83,7 @@
                                 <p style="font-size: 0.82rem; color: #0369a1; margin-top: 6px; margin-bottom: 10px;">Incolla qui sotto il testo grezzo del post o del messaggio WhatsApp per compilare automaticamente tutti i campi del modulo:</p>
 
                                 <div id="parser-input-container" style="margin-top: 10px;">
-                                    <textarea id="smart-parser-input" rows="4" placeholder="Incolla qui il testo del post (es. CARNEVALE DI MISTERBIANCO, Piazzale Giotto ore 10:00, Villabate ore 10:20...)" style="width: 100%; padding: 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.88rem; background: #ffffff; margin-bottom: 10px;"></textarea>
+                                    <textarea id="smart-parser-input" rows="8" placeholder="Incolla qui il testo del post (es. CARNEVALE DI MISTERBIANCO, Piazzale Giotto ore 10:00, Villabate ore 10:20...)" style="width: 100%; min-height: 180px; padding: 12px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; background: #ffffff; margin-bottom: 10px; font-family: inherit; resize: vertical;"></textarea>
                                     <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
                                         <button type="button" id="btn-auto-compila-smart" onclick="autoCompilaModuloSmart(event)" class="btn-primary" style="background: #0284c7; font-weight: 700; padding: 12px 26px; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);">
                                             ⚡ Auto-compila Modulo
@@ -405,12 +405,12 @@
 
                             <div class="form-group">
                                 <label for="short-desc">Descrizione Breve (Per la scheda in Home) *</label>
-                                <textarea id="short-desc" rows="2" required placeholder="Una o due frasi di presentazione del tour..."></textarea>
+                                <textarea id="short-desc" rows="4" required placeholder="Una o due frasi di presentazione del tour..." style="width: 100%; min-height: 110px; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; font-family: inherit; resize: vertical; background: #ffffff;"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label for="full-desc">Descrizione Dettagliata Generale *</label>
-                                <textarea id="full-desc" rows="4" required placeholder="Spiegazione generale del tour e storia dei luoghi..."></textarea>
+                                <textarea id="full-desc" rows="14" required placeholder="Spiegazione generale del tour e storia dei luoghi..." style="width: 100%; min-height: 320px; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; font-family: inherit; resize: vertical; background: #ffffff;"></textarea>
                             </div>
 
                             <div class="button-group">
