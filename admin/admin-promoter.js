@@ -100,6 +100,7 @@ function caricaPromotersAdmin() {
                         ✏️ Imposta / Modifica IBAN
                     </button>
                 </div>
+                </div>
 
                 <!-- Griglia Riepilogo Guadagni Rivenditore -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">

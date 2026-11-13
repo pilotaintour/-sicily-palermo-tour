@@ -3,16 +3,21 @@
  * Sicily Palermo Tour - Admin Itinerari
  */
 
-const STORAGE_KEY = 'spt_itineraries';
+if (typeof window.escapeHtmlAdmin !== 'function') {
+    window.escapeHtmlAdmin = function(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+}
 
-if (typeof window.fotoItinerarioCorrenti === 'undefined') window.fotoItinerarioCorrenti = [];
-if (typeof window.puntiRaccoltaCorrenti === 'undefined') window.puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
-if (typeof window.orariCorrenti === 'undefined') window.orariCorrenti = [{ time: '09:00', capacity: 53 }];
+const STORAGE_KEY = 'spt_itinerari';
 
-var fotoItinerarioCorrenti = window.fotoItinerarioCorrenti;
-var puntiRaccoltaCorrenti = window.puntiRaccoltaCorrenti;
-var orariCorrenti = window.orariCorrenti;
-
+function pulisciVecchiItinerariDemo(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
         if (!item) return false;
@@ -87,17 +92,17 @@ function caricaElencoItinerari() {
 
             return `
                 <div class="itinerary-item">
-                    <img class="item-thumb" src="${coverImg}" alt="${escapeHtmlAdmin(item.title)}" onerror="this.src='https://via.placeholder.com/90?text=Foto'">
+                    <img class="item-thumb" src="${coverImg}" alt="${window.escapeHtmlAdmin(item.title)}" onerror="this.src='https://via.placeholder.com/90?text=Foto'">
                     <div class="item-content">
-                        <span class="item-badge">${escapeHtmlAdmin(item.category)}</span>
+                        <span class="item-badge">${window.escapeHtmlAdmin(item.category)}</span>
                         <span class="item-badge" style="background:#e0f2fe; color:#0369a1;">🖼️ ${totalPhotos} Foto</span>
                         <span class="item-badge" style="background:#fef3c7; color:#92400e;">⏰ ${totalOrari} Orari Attivi</span>
                         ${item.featured === 'true' ? '<span class="item-badge" style="background:#dbeafe; color:#1e40af;">⭐ Evidenza</span>' : ''}
                         ${item.isConsigliato ? '<span class="item-badge" style="background:#fef3c7; color:#92400e;">⭐ Consigliato</span>' : ''}
                         ${item.isAllaModa ? '<span class="item-badge" style="background:#fee2e2; color:#991b1b;">🔥 Moda</span>' : ''}
-                        <div class="item-title">${escapeHtmlAdmin(item.title)}</div>
-                        <div class="item-meta">⏱️ ${escapeHtmlAdmin(item.duration || 'N/D')} | 💰 ${escapeHtmlAdmin(item.price || 'N/D')}</div>
-                        <div class="item-desc">${escapeHtmlAdmin(item.shortDesc)}</div>
+                        <div class="item-title">${window.escapeHtmlAdmin(item.title)}</div>
+                        <div class="item-meta">⏱️ ${window.escapeHtmlAdmin(item.duration || 'N/D')} | 💰 ${window.escapeHtmlAdmin(item.price || 'N/D')}</div>
+                        <div class="item-desc">${window.escapeHtmlAdmin(item.shortDesc)}</div>
                     </div>
                     <div class="item-actions">
                         <button type="button" class="btn-secondary btn-small" onclick="preparaModifica('${item.id}')">✏️ Edit</button>
@@ -204,7 +209,11 @@ async function salvaItinerario(event) {
     const category = document.getElementById('category').value;
     const duration = document.getElementById('duration').value.trim();
     const price = document.getElementById('price').value.trim();
-    const pickupPoints = puntiRaccoltaCorrenti.map(p => p.trim()).filter(Boolean);
+
+    if (!window.puntiRaccoltaCorrenti || !Array.isArray(window.puntiRaccoltaCorrenti)) {
+        window.puntiRaccoltaCorrenti = ['Piazzale Giotto'];
+    }
+    const pickupPoints = window.puntiRaccoltaCorrenti.map(p => p.trim()).filter(Boolean);
     const meetingPoint = pickupPoints.length > 0 ? pickupPoints.join(' • ') : 'Palermo Centro';
     const meetingInstructions = document.getElementById('meeting-instructions') ? document.getElementById('meeting-instructions').value.trim() : '';
 
@@ -227,22 +236,29 @@ async function salvaItinerario(event) {
     const giorniChecks = document.querySelectorAll('input[name="giorno-check"]:checked');
     const availableDays = giorniChecks.length > 0 ? Array.from(giorniChecks).map(c => parseInt(c.value, 10)) : [0, 1, 2, 3, 4, 5, 6];
 
+    let itinerari = getItinerari();
     const tappe = (id && itinerari.find(item => String(item.id) === String(id))) ? (itinerari.find(item => String(item.id) === String(id)).tappe || []) : [];
 
     const serviziChecks = document.querySelectorAll('input[name="servizio-check"]:checked');
     const servizi = Array.from(serviziChecks).map(c => c.value);
 
-    const singleUrl = document.getElementById('image-url').value.trim();
-    if (singleUrl && !fotoItinerarioCorrenti.includes(singleUrl)) {
-        fotoItinerarioCorrenti.push(singleUrl);
+    if (!window.fotoItinerarioCorrenti || !Array.isArray(window.fotoItinerarioCorrenti)) {
+        window.fotoItinerarioCorrenti = [];
     }
 
-    const images = [...fotoItinerarioCorrenti];
-    const imageUrl = images.length > 0 ? images[0] : 'https://via.placeholder.com/400x200?text=Palermo+Tour';
-    const timeSlots = [...orariCorrenti];
-    const maxCapacity = (timeSlots.length > 0 && typeof timeSlots[0] === 'object') ? timeSlots[0].capacity : 15;
+    const singleUrl = document.getElementById('image-url') ? document.getElementById('image-url').value.trim() : '';
+    if (singleUrl && !window.fotoItinerarioCorrenti.includes(singleUrl)) {
+        window.fotoItinerarioCorrenti.push(singleUrl);
+    }
 
-    let itinerari = getItinerari();
+    const images = [...window.fotoItinerarioCorrenti];
+    const imageUrl = images.length > 0 ? images[0] : 'https://via.placeholder.com/400x200?text=Palermo+Tour';
+
+    if (!window.orariCorrenti || !Array.isArray(window.orariCorrenti)) {
+        window.orariCorrenti = [{ time: '09:00', capacity: 53 }];
+    }
+    const timeSlots = [...window.orariCorrenti];
+    const maxCapacity = (timeSlots.length > 0 && typeof timeSlots[0] === 'object') ? timeSlots[0].capacity : 53;
 
     if (id) {
         itinerari = itinerari.map(item => {
@@ -278,14 +294,14 @@ function preparaModifica(id) {
     document.getElementById('duration').value = item.duration || '';
     document.getElementById('price').value = item.price || '';
     if (item.pickupPoints && Array.isArray(item.pickupPoints) && item.pickupPoints.length > 0) {
-        puntiRaccoltaCorrenti = [...item.pickupPoints];
+        window.puntiRaccoltaCorrenti = [...item.pickupPoints];
     } else if (item.meetingPoint) {
-        puntiRaccoltaCorrenti = item.meetingPoint.split('•').map(s => s.trim()).filter(Boolean);
-        if (puntiRaccoltaCorrenti.length === 0) {
-            puntiRaccoltaCorrenti = [item.meetingPoint];
+        window.puntiRaccoltaCorrenti = item.meetingPoint.split('•').map(s => s.trim()).filter(Boolean);
+        if (window.puntiRaccoltaCorrenti.length === 0) {
+            window.puntiRaccoltaCorrenti = [item.meetingPoint];
         }
     } else {
-        puntiRaccoltaCorrenti = ['Piazzale Giotto'];
+        window.puntiRaccoltaCorrenti = ['Piazzale Giotto'];
     }
     renderCampiPuntiRaccolta();
 
@@ -315,9 +331,9 @@ function preparaModifica(id) {
     document.getElementById('full-desc').value = item.fullDesc || '';
 
     if (item.timeSlots && item.timeSlots.length > 0) {
-        orariCorrenti = [...item.timeSlots];
+        window.orariCorrenti = [...item.timeSlots];
     } else {
-        orariCorrenti = [
+        window.orariCorrenti = [
             { time: '10:00', capacity: 53 }
         ];
     }
@@ -336,11 +352,11 @@ function preparaModifica(id) {
     });
 
     if (item.images && item.images.length > 0) {
-        fotoItinerarioCorrenti = [...item.images];
+        window.fotoItinerarioCorrenti = [...item.images];
     } else if (item.imageUrl) {
-        fotoItinerarioCorrenti = [item.imageUrl];
+        window.fotoItinerarioCorrenti = [item.imageUrl];
     } else {
-        fotoItinerarioCorrenti = [];
+        window.fotoItinerarioCorrenti = [];
     }
 
     renderGalleriaAnteprima();
@@ -374,8 +390,8 @@ function resetForm() {
     sincronizzaCheckBus(false);
     const fileInput = document.getElementById('image-file-input');
     if (fileInput) fileInput.value = '';
-    fotoItinerarioCorrenti = [];
-    orariCorrenti = [
+    window.fotoItinerarioCorrenti = [];
+    window.orariCorrenti = [
         { time: '10:00', capacity: 53 }
     ];
     document.querySelectorAll('input[name="giorno-check"]').forEach(c => c.checked = true);
@@ -387,7 +403,7 @@ function resetForm() {
     if (isConsigliatoEl) isConsigliatoEl.checked = false;
     if (isAllaModaEl) isAllaModaEl.checked = false;
 
-    puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
+    window.puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
     document.querySelectorAll('input[name="servizio-check"]').forEach(c => c.checked = false);
     renderCampiPuntiRaccolta();
     renderGalleriaAnteprima();

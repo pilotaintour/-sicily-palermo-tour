@@ -18,6 +18,7 @@ if (typeof window.escapeHtmlAdmin !== 'function') {
 if (!window.orariCorrenti || !Array.isArray(window.orariCorrenti)) {
     window.orariCorrenti = [{ time: '09:00', capacity: 53 }];
 }
+var orariCorrenti = window.orariCorrenti;
 
 function apriModalTabellaOrari() {
     const modal = document.getElementById('modal-tabella-orari');

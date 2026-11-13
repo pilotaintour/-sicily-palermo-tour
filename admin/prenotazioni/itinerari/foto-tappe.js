@@ -3,7 +3,7 @@
  * Sicily Palermo Tour - Admin Itinerari
  */
 
-if (typeof window.fotoItinerarioCorrenti === 'undefined') {
+if (!window.fotoItinerarioCorrenti || !Array.isArray(window.fotoItinerarioCorrenti)) {
     window.fotoItinerarioCorrenti = [];
 }
 var fotoItinerarioCorrenti = window.fotoItinerarioCorrenti;
@@ -46,7 +46,7 @@ function gestisciCaricamentoFotoMultiple(event) {
                 ctx.drawImage(img, 0, 0, width, height);
 
                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.60);
-                fotoItinerarioCorrenti.push(compressedDataUrl);
+                window.fotoItinerarioCorrenti.push(compressedDataUrl);
 
                 completati++;
                 if (completati === files.length) {
@@ -66,14 +66,19 @@ function aggiungiUrlFoto() {
 
     const url = urlInput.value.trim();
     if (url) {
-        fotoItinerarioCorrenti.push(url);
+        if (!window.fotoItinerarioCorrenti || !Array.isArray(window.fotoItinerarioCorrenti)) {
+            window.fotoItinerarioCorrenti = [];
+        }
+        window.fotoItinerarioCorrenti.push(url);
         urlInput.value = '';
         renderGalleriaAnteprima();
     }
 }
 
 function rimuoviFotoGalleria(index) {
-    fotoItinerarioCorrenti.splice(index, 1);
+    if (window.fotoItinerarioCorrenti && Array.isArray(window.fotoItinerarioCorrenti)) {
+        window.fotoItinerarioCorrenti.splice(index, 1);
+    }
     renderGalleriaAnteprima();
 }
 
@@ -81,14 +86,14 @@ function renderGalleriaAnteprima() {
     const container = document.getElementById('gallery-preview-container');
     if (!container) return;
 
-    if (fotoItinerarioCorrenti.length === 0) {
+    if (!window.fotoItinerarioCorrenti || !Array.isArray(window.fotoItinerarioCorrenti) || window.fotoItinerarioCorrenti.length === 0) {
         container.innerHTML = '<p style="font-size:0.85rem; color:#94a3b8; grid-column:1/-1;">Nessuna foto ancora aggiunta.</p>';
         return;
     }
 
-    const htmlHeader = `<div style="grid-column:1/-1; font-weight:bold; font-size:0.85rem; color:#1b4f72;">🖼️ ${fotoItinerarioCorrenti.length} foto pronte per la galleria del tour:</div>`;
+    const htmlHeader = `<div style="grid-column:1/-1; font-weight:bold; font-size:0.85rem; color:#1b4f72;">🖼️ ${window.fotoItinerarioCorrenti.length} foto pronte per la galleria del tour:</div>`;
 
-    container.innerHTML = htmlHeader + fotoItinerarioCorrenti.map((imgUrl, index) => `
+    container.innerHTML = htmlHeader + window.fotoItinerarioCorrenti.map((imgUrl, index) => `
         <div class="gallery-thumb-item">
             <img src="${imgUrl}" alt="Foto ${index + 1}">
             <button type="button" class="gallery-thumb-remove" onclick="rimuoviFotoGalleria(${index})" title="Rimuovi foto">✕</button>

@@ -569,6 +569,11 @@ input[type="radio"] {
     position: relative;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
 
 .item-actions {
     display: flex;

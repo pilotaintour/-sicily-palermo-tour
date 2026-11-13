@@ -3,6 +3,18 @@
  * Sicily Palermo Tour - Admin Itinerari
  */
 
+if (typeof window.escapeHtmlAdmin !== 'function') {
+    window.escapeHtmlAdmin = function(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+}
+
 const PALERMO_AUTOCOMPLETE_PLACES = [
     { title: 'Piazzale Giotto', subtitle: 'Piazzale Giotto, 90145 Palermo PA' },
     { title: 'Piazza Politeama', subtitle: 'Piazza Castelnuovo / Politeama, Palermo PA' },
@@ -20,9 +32,10 @@ const PALERMO_AUTOCOMPLETE_PLACES = [
 ];
 
 let autocompleteTimer = null;
-if (typeof window.puntiRaccoltaCorrenti === 'undefined') {
+if (typeof window.puntiRaccoltaCorrenti === 'undefined' || !Array.isArray(window.puntiRaccoltaCorrenti)) {
     window.puntiRaccoltaCorrenti = ['Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)'];
 }
+var puntiRaccoltaCorrenti = window.puntiRaccoltaCorrenti;
 
 function renderCampiPuntiRaccolta() {
     const container = document.getElementById('punti-raccolta-container');
@@ -48,7 +61,7 @@ function renderCampiPuntiRaccolta() {
                        style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; background: #ffffff;">
                 <div id="punto-raccolta-suggestions-${index}" class="autocomplete-dropdown hidden"></div>
             </div>
-            ${puntiRaccoltaCorrenti.length > 1 ? `<button type="button" class="btn-danger btn-small" onclick="rimuoviCampoPuntoRaccolta(${index})" title="Elimina punto" style="padding: 8px 12px;">🗑️</button>` : ''}
+            ${window.puntiRaccoltaCorrenti.length > 1 ? `<button type="button" class="btn-danger btn-small" onclick="rimuoviCampoPuntoRaccolta(${index})" title="Elimina punto" style="padding: 8px 12px;">🗑️</button>` : ''}
         </div>
         `;
     }).join('');
@@ -108,11 +121,11 @@ function renderListaSuggerimentiPunto(index, lista, dropdown) {
     }
 
     dropdown.innerHTML = lista.map(item => `
-        <div class="autocomplete-item" onclick="selezionaPuntoRaccoltaAutocomplete(${index}, '${escapeHtmlAdmin(item.title)}')">
+        <div class="autocomplete-item" onclick="selezionaPuntoRaccoltaAutocomplete(${index}, '${window.escapeHtmlAdmin(item.title)}')">
             <span style="font-size: 1.1rem; line-height: 1;">📍</span>
             <div>
-                <strong style="color: #0b2545; display: block; font-size: 0.92rem;">${escapeHtmlAdmin(item.title)}</strong>
-                <span style="color: #64748b; font-size: 0.78rem; display: block;">${escapeHtmlAdmin(item.subtitle)}</span>
+                <strong style="color: #0b2545; display: block; font-size: 0.92rem;">${window.escapeHtmlAdmin(item.title)}</strong>
+                <span style="color: #64748b; font-size: 0.78rem; display: block;">${window.escapeHtmlAdmin(item.subtitle)}</span>
             </div>
         </div>
     `).join('');
@@ -121,7 +134,8 @@ function renderListaSuggerimentiPunto(index, lista, dropdown) {
 }
 
 function selezionaPuntoRaccoltaAutocomplete(index, valore) {
-    puntiRaccoltaCorrenti[index] = valore;
+    if (!Array.isArray(window.puntiRaccoltaCorrenti)) window.puntiRaccoltaCorrenti = [];
+    window.puntiRaccoltaCorrenti[index] = valore;
     const input = document.getElementById(`punto-raccolta-input-${index}`);
     if (input) input.value = valore;
 
@@ -136,10 +150,10 @@ document.addEventListener('click', (event) => {
 });
 
 function aggiungiCampoPuntoRaccolta() {
-    if (!Array.isArray(puntiRaccoltaCorrenti)) {
-        puntiRaccoltaCorrenti = ['Piazzale Giotto'];
+    if (!Array.isArray(window.puntiRaccoltaCorrenti)) {
+        window.puntiRaccoltaCorrenti = ['Piazzale Giotto'];
     }
-    puntiRaccoltaCorrenti.push('');
+    window.puntiRaccoltaCorrenti.push('');
     renderCampiPuntiRaccolta();
     setTimeout(() => {
         const inputs = document.querySelectorAll('#punti-raccolta-container input');
@@ -150,14 +164,14 @@ function aggiungiCampoPuntoRaccolta() {
 }
 
 function rimuoviCampoPuntoRaccolta(index) {
-    if (!Array.isArray(puntiRaccoltaCorrenti) || puntiRaccoltaCorrenti.length <= 1) return;
-    puntiRaccoltaCorrenti.splice(index, 1);
+    if (!Array.isArray(window.puntiRaccoltaCorrenti) || window.puntiRaccoltaCorrenti.length <= 1) return;
+    window.puntiRaccoltaCorrenti.splice(index, 1);
     renderCampiPuntiRaccolta();
 }
 
 function aggiornaValorePuntoRaccolta(index, val) {
-    if (Array.isArray(puntiRaccoltaCorrenti) && puntiRaccoltaCorrenti[index] !== undefined) {
-        puntiRaccoltaCorrenti[index] = val;
+    if (Array.isArray(window.puntiRaccoltaCorrenti) && window.puntiRaccoltaCorrenti[index] !== undefined) {
+        window.puntiRaccoltaCorrenti[index] = val;
     }
 }
 

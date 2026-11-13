@@ -3,6 +3,18 @@
  * Analizza e auto-compila i campi del modulo itinerario da post WhatsApp/Social.
  */
 
+if (typeof window.escapeHtmlAdmin !== 'function') {
+    window.escapeHtmlAdmin = function(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+}
+
 class AdminSmartParser {
     constructor() {
         this.monthMap = {
@@ -585,23 +597,23 @@ class AdminSmartParser {
             const radioSingle = document.querySelector('input[name="availability-type"][value="singleDate"]');
             if (radioSingle) {
                 radioSingle.checked = true;
-                if (typeof gestisciTipoDisponibilitaTour === 'function') {
-                    gestisciTipoDisponibilitaTour('singleDate');
+                if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
+                    window.gestisciTipoDisponibilitaTour('singleDate');
                 }
             }
             const dateInput = document.getElementById('single-fixed-date-input');
             if (dateInput) {
                 dateInput.value = data.singleFixedDate;
-                if (typeof aggiornaEtichettaDataFissaLeggibile === 'function') {
-                    aggiornaEtichettaDataFissaLeggibile(data.singleFixedDate);
+                if (typeof window.aggiornaEtichettaDataFissaLeggibile === 'function') {
+                    window.aggiornaEtichettaDataFissaLeggibile(data.singleFixedDate);
                 }
             }
         } else {
             const radioWeekly = document.querySelector('input[name="availability-type"][value="weekly"]');
             if (radioWeekly) {
                 radioWeekly.checked = true;
-                if (typeof gestisciTipoDisponibilitaTour === 'function') {
-                    gestisciTipoDisponibilitaTour('weekly');
+                if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
+                    window.gestisciTipoDisponibilitaTour('weekly');
                 }
             }
         }
@@ -615,6 +627,10 @@ class AdminSmartParser {
             if (checkAll) {
                 checkAll.checked = (data.activeWeekDays.length === 7);
             }
+        } else if (data.availabilityType === 'weekly') {
+            document.querySelectorAll('input[name="giorno-check"]').forEach(c => c.checked = true);
+            const checkAll = document.getElementById('check-all-days');
+            if (checkAll) checkAll.checked = true;
         }
 
         // Punti di Raccolta Dinamici (FORZATI SULL'ARRAY GLOBALE ED AGGIORNAMENTO RENDERING)
@@ -627,8 +643,8 @@ class AdminSmartParser {
         } else {
             window.puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)');
         }
-        if (typeof renderCampiPuntiRaccolta === 'function') {
-            renderCampiPuntiRaccolta();
+        if (typeof window.renderCampiPuntiRaccolta === 'function') {
+            window.renderCampiPuntiRaccolta();
         }
 
         // Capienza Bus Condivisa (Attiva per default per Bus da 53 posti)
@@ -636,8 +652,8 @@ class AdminSmartParser {
         const busCheckModal = document.getElementById('shared-bus-capacity-check');
         if (busCheckMain) busCheckMain.checked = true;
         if (busCheckModal) busCheckModal.checked = true;
-        if (typeof sincronizzaCheckBus === 'function') {
-            sincronizzaCheckBus(true);
+        if (typeof window.sincronizzaCheckBus === 'function') {
+            window.sincronizzaCheckBus(true);
         }
 
         // Capienza fissa 53 posti per TUTTI gli orari estratti dal testo
@@ -650,8 +666,8 @@ class AdminSmartParser {
         } else {
             window.orariCorrenti.push({ time: '09:00', capacity: 53 });
         }
-        if (typeof renderCampiOrari === 'function') {
-            renderCampiOrari();
+        if (typeof window.renderCampiOrari === 'function') {
+            window.renderCampiOrari();
         }
 
         // Servizi Inclusi & Caratteristiche Checkboxes
