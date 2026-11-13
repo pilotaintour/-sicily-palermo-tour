@@ -233,14 +233,14 @@ class Step3Dati {
             <div id="step3-terms-card" style="background: #fafcfd; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 18px; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
                 <!-- Avviso Condizioni Contrattuali -->
                 <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 14px; margin-bottom: 14px; font-size: 0.88rem; color: #0b2545; line-height: 1.5;">
-                    <div style="font-weight: 800; color: #0369a1; font-size: 0.95rem; margin-bottom: 8px;">📋 Condizioni del Contratto di Partecipazione:</div>
+                    <div style="font-weight: 800; color: #dc2626; font-size: 0.92rem; margin-bottom: 8px;">🔴 Con il versamento della quota si intende accettato ogni singolo punto inserito incluse le condizioni ed il regolamento:</div>
                     <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: #334155; font-size: 0.85rem;">
-                        <li>Con il versamento della quota il partecipante dichiara di accettare ogni singolo punto del contratto e del programma.</li>
-                        <li>Non sono previste riduzioni o rimborsi in caso di condizioni meteorologiche avverse.</li>
-                        <li>Non è ammesso alcun cambio data una volta versata la quota e la quota non è rimborsabile.</li>
-                        <li>È ammessa la sostituzione del partecipante anche la mattina stessa della partenza (esclusi i voli in aereo).</li>
-                        <li>L'azienda si solleva da ogni responsabilità in caso di rifiuto dell'assicurazione medico/bagaglio o annullamento.</li>
-                        <li>Il partecipante è tenuto a rispettare orari e punti di ritrovo. In caso di ritardo o mancata presentazione gli accompagnatori non sono tenuti ad aspettare e non è previsto alcun rimborso.</li>
+                        <li><strong>Numero Minimo:</strong> La partenza è garantita al raggiungimento del numero minimo di 35 partecipanti.</li>
+                        <li><strong>Annullamento:</strong> Nel caso di mancato raggiungimento dei numeri, Sicily Palermo Tour può annullare il trasferimento fino al giorno prima della partenza con rimborso completo della quota versata, senza obbligo di riprotezione.</li>
+                        <li><strong>Meteo:</strong> Non sono previste riduzioni o rimborsi nel caso in cui le condizioni meteorologiche siano avverse.</li>
+                        <li><strong>Assicurazione & Rimborsi:</strong> Non è ammesso alcun cambio data e la quota non è rimborsabile. L'azienda si solleva da ogni responsabilità in caso di rifiuto dell'assicurazione medico/bagaglio o annullamento.</li>
+                        <li><strong>Sostituzione:</strong> È ammessa la sostituzione del partecipante anche la mattina stessa della partenza (esclusi i voli in aereo).</li>
+                        <li><strong>Puntualità:</strong> In caso di ritardo o mancata presentazione gli accompagnatori non sono tenuti ad aspettare e non ci sarà in qualsiasi caso nessun rimborso.</li>
                     </ul>
                 </div>
 
