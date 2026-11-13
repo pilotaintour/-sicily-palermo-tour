@@ -569,6 +569,12 @@ input[type="radio"] {
     padding: 20px;
 }
 
+.modal-overlay.hidden {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
 .modal-content {
     background: #ffffff;
     border-radius: 12px;
