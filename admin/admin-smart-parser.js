@@ -21,14 +21,8 @@ class AdminSmartParser {
 
     toggleParserBox() {
         const container = document.getElementById('parser-input-container');
-        if (!container) return;
-        const isHidden = container.classList.contains('hidden') || window.getComputedStyle(container).display === 'none';
-        if (isHidden) {
-            container.classList.remove('hidden');
-            container.style.display = 'block';
-        } else {
-            container.classList.add('hidden');
-            container.style.display = 'none';
+        if (container) {
+            container.classList.toggle('hidden');
         }
     }
 
@@ -38,13 +32,13 @@ class AdminSmartParser {
         let str = String(rawPoint).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-]/gu, ' ').trim();
         str = str.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
 
-        // 2. Rimuovi orari e diciture "(Ore ...)" per lasciare SOLO il luogo di partenza pulito
+        // 2. Rimuovi qualsiasi orario o dicitura "(Ore ...)" per lasciare SOLO il luogo pulito
         str = str.replace(/\(\s*ore\s*[^)]*\)/gi, ' ');
         str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9][\.\:][0-5][0-9]\b/gi, ' ');
         str = str.replace(/\b(?:ore\s*)?[0-1]?[0-9]\b(?=\s*(?:am|pm|h))/gi, ' ');
         str = str.replace(/\s+/g, ' ').trim();
 
-        // 3. Normalizza nomi noti dei luoghi di partenza
+        // 3. Espandi nomi noti per la Sicilia / Palermo
         if (/giotto/i.test(str)) {
             str = 'Piazzale Giotto';
         } else if (/politeama/i.test(str)) {
@@ -53,17 +47,78 @@ class AdminSmartParser {
             str = 'Villabate';
         } else if (/bagheria/i.test(str)) {
             str = 'Bagheria';
-        } else if (/cattedrale/i.test(str)) {
-            str = 'Cattedrale di Palermo';
-        } else if (/teatro massimo/i.test(str)) {
-            str = 'Teatro Massimo';
         }
 
         str = str.replace(/^[:\s\*\-\)]+/, '').replace(/[:\s\*\-\(]+$/, '').trim();
+
         return str;
     }
 
+    extractTappeFromText(text) {
+        const tappe = [];
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
+        let inProgramma = false;
+        let programmaText = '';
+
+        lines.forEach(line => {
+            const upper = line.toUpperCase();
+            if (upper.includes('PROGRAMMA') || upper.includes('ITINERARIO') || upper.includes('TAPPE')) {
+                inProgramma = true;
+                return;
+            }
+            if (inProgramma) {
+                if (/COMPRENDE|QUOTA|NOTE|INFORMAZIONI|PRENOTAZIONI|SERVIZI|CONTATTI/i.test(line)) {
+                    inProgramma = false;
+                    return;
+                }
+                programmaText += ' ' + line;
+            }
+        });
+
+        if (programmaText.trim()) {
+            const splitPattern = /(?:\.|\n|(?=\b(?:raduno|partenza|arrivo|visita|pranzo|pomeriggio|ingresso|sosta|al termine|rientro)\b))/gi;
+            const rawSentences = programmaText.split(splitPattern);
+
+            rawSentences.forEach(s => {
+                let clean = s.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-\d+\.]/gu, ' ').trim();
+                clean = clean.replace(/^[:\s\*\-\d+\.\:\)]+/, '').trim();
+                if (clean.length >= 12 && clean.length <= 150 && !/€|euro|334|091|quota|include|comprende/i.test(clean)) {
+                    clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+                    if (!tappe.includes(clean)) {
+                        tappe.push(clean);
+                    }
+                }
+            });
+        }
+
+        if (tappe.length === 0) {
+            lines.forEach(line => {
+                if (/^[\d+\.\-\*•👉📍]\s*/.test(line)) {
+                    let clean = line.replace(/^[\d+\.\-\*•👉📍\s]+/, '').trim();
+                    clean = clean.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                    if (clean.length >= 12 && clean.length <= 120 && !/quota|comprend|prezzo|euro|€|info|tel/i.test(clean)) {
+                        clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+                        if (!tappe.includes(clean)) {
+                            tappe.push(clean);
+                        }
+                    }
+                }
+            });
+        }
+
+        if (tappe.length === 0) {
+            tappe.push(
+                'Raduno dei partecipanti nei punti di raccolta e partenza in Bus GT',
+                'Visita guidata ai principali monumenti e punti d’interesse',
+                'Pranzo e tempo libero a disposizione dei partecipanti',
+                'Pomeriggio dedicato alle attività ed attrazioni del programma',
+                'Ritrovo dei partecipanti e partenza per il viaggio di rientro'
+            );
+        }
+
+        return tappe.slice(0, 6);
+    }
 
     extractDatesFromText(text) {
         const foundDates = [];
@@ -356,7 +411,7 @@ class AdminSmartParser {
         });
 
         if (pickupPoints.length === 0) {
-            pickupPoints.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)', 'Bagheria (Ore 09:40)');
+            pickupPoints.push('Piazzale Giotto', 'Villabate', 'Bagheria');
         }
 
         // 5b. Estrazione Orari Dinamici nel testo (con capienza predefinita di 53 posti)
@@ -558,7 +613,7 @@ class AdminSmartParser {
         if (data.pickupPoints && data.pickupPoints.length > 0) {
             data.pickupPoints.forEach(pt => window.puntiRaccoltaCorrenti.push(pt));
         } else {
-            window.puntiRaccoltaCorrenti.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)');
+            window.puntiRaccoltaCorrenti.push('Piazzale Giotto', 'Villabate');
         }
         if (typeof renderCampiPuntiRaccolta === 'function') {
             renderCampiPuntiRaccolta();
