@@ -3,7 +3,16 @@
  * Sicily Palermo Tour - Admin Itinerari
  */
 
-function pulisciVecchiItinerariDemo(lista) {
+const STORAGE_KEY = 'spt_itineraries';
+
+if (typeof window.fotoItinerarioCorrenti === 'undefined') window.fotoItinerarioCorrenti = [];
+if (typeof window.puntiRaccoltaCorrenti === 'undefined') window.puntiRaccoltaCorrenti = ['Piazzale Giotto', 'Piazza Politeama'];
+if (typeof window.orariCorrenti === 'undefined') window.orariCorrenti = [{ time: '09:00', capacity: 53 }];
+
+var fotoItinerarioCorrenti = window.fotoItinerarioCorrenti;
+var puntiRaccoltaCorrenti = window.puntiRaccoltaCorrenti;
+var orariCorrenti = window.orariCorrenti;
+
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
         if (!item) return false;

@@ -2,6 +2,33 @@
  * ADMIN - GESTIONE RECENSIONI - Sicily Palermo Tour
  */
 
+const RECENSIONI_STORAGE_KEY = 'spt_recensioni';
+
+function getRecensioni() {
+    try {
+        const salvate = localStorage.getItem(RECENSIONI_STORAGE_KEY);
+        return salvate ? JSON.parse(salvate) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function salvaRecensioni(lista) {
+    try {
+        localStorage.setItem(RECENSIONI_STORAGE_KEY, JSON.stringify(lista));
+    } catch (e) {}
+}
+
+function escapeHtmlRecensione(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function caricaRecensioniAdmin() {
     const container = document.getElementById('admin-recensioni-list');
     if (!container) return;

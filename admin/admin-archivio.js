@@ -259,7 +259,7 @@ class AdminArchivioManager {
                             </div>
 
                             <div style="display: flex; gap: 8px;">
-                                <button type="button" class="btn-secondary btn-small" style="background:#0284c7; color:#fff;" onclick="stampaFoglioPresenzeGuidaParticolare('${escapeHtmlBooking(titoloTour)}')">
+                                <button type="button" class="btn-secondary btn-small" style="background:#0284c7; color:#fff;" onclick="scaricaSalvaDocumentoLista('${escapeHtmlBooking(titoloTour)}')">
                                     📄 Salva PDF / Stampa
                                 </button>
                                 <button type="button" class="btn-danger btn-small" onclick="adminArchivio.eliminaGruppoArchivio('${escapeHtmlBooking(titoloTour)}', '${escapeHtmlBooking(g.dateStr)}', '${escapeHtmlBooking(g.timeStr)}')">

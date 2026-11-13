@@ -3,6 +3,11 @@
  * Sicily Palermo Tour - Admin Itinerari
  */
 
+if (typeof window.fotoItinerarioCorrenti === 'undefined') {
+    window.fotoItinerarioCorrenti = [];
+}
+var fotoItinerarioCorrenti = window.fotoItinerarioCorrenti;
+
 function gestisciCaricamentoFotoMultiple(event) {
     const files = Array.from(event.target.files);
     if (!files || files.length === 0) return;
