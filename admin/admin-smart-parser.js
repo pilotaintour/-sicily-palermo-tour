@@ -258,7 +258,10 @@ class AdminSmartParser {
 
     autoCompilaForm() {
         const textarea = document.getElementById('smart-parser-input');
-        if (!textarea) return;
+        if (!textarea) {
+            alert('⚠️ Impossibile trovare la casella di testo dello Smart Parser.');
+            return;
+        }
 
         const rawText = textarea.value.trim();
         if (!rawText) {
@@ -269,7 +272,9 @@ class AdminSmartParser {
         try {
             const parsed = this.parseText(rawText);
             this.applicaCampiForm(parsed);
-            const orariStr = parsed.timeSlots.map(s => `${s.time} (53p)`).join(', ');
+
+            const timeSlots = parsed.timeSlots || [{ time: '09:00', capacity: 53 }];
+            const orariStr = timeSlots.map(s => `${s.time} (53p)`).join(', ');
 
             let dateMsg = '';
             if (parsed.extractedDates && parsed.extractedDates.length > 1) {
@@ -282,10 +287,12 @@ class AdminSmartParser {
                 dateMsg = `🗓️ Nessuna data specifica trovata nel testo (Disponibilità settimanale)`;
             }
 
-            alert(`✨ Modulo auto-compilato con successo!\n\n${dateMsg}\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\n⏰ Estratti ${parsed.timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi e carica la locandina prima di salvare.`);
+            const pickupPoints = parsed.pickupPoints || ['Piazzale Giotto', 'Villabate'];
+
+            alert(`✨ Modulo auto-compilato con successo!\n\n${dateMsg}\n\n📍 Estratte ${pickupPoints.length} fermate:\n- ${pickupPoints.join('\n- ')}\n\n⏰ Estratti ${timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi prima di salvare.`);
         } catch (err) {
             console.error('Errore durante l\'auto-compilazione:', err);
-            alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
+            alert('⚠️ Si è verificato un errore durante l\'analisi del testo: ' + (err.message || err));
         }
     }
 
