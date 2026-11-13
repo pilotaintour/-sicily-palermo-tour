@@ -404,7 +404,8 @@ class AdminSmartParser {
 
         const locationKeywordsRegex = /giotto|villabate|bagheria|politeama|cattedrale|teatro|massimo|stazione|porto|molo|aeroporto|sferracavallo|mondello|monreale|agrigento|catania|trapani|messina|siracusa|enna|caltanissetta|ragusa|piazza|piazzale|via\b|viale\b|corso\b|largo\b|svincolo|casello|distributore|hotel|bar\b|pasticceria|rotonda|pensilina|fermata/i;
 
-        lines.forEach(line => {
+        lines.forEach((line, index) => {
+            if (index === 0) return; // Salta la prima riga (titolo del post)
             let cleanLine = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-\d+\.]/gu, ' ').trim();
             cleanLine = cleanLine.replace(/^[:\s\*-]+/g, '').replace(/[:\s]+$/g, '').trim();
 
@@ -499,7 +500,6 @@ class AdminSmartParser {
 
         // 6. Estrazione Intelligente Servizi Inclusi & Caratteristiche dal testo
         const servizi = [];
-        const lowerText = fullText.toLowerCase();
 
         if (/\b(guida|guide|accompagnament)\b/.test(lowerText)) {
             servizi.push('Guida Turistica Autorizzata');
