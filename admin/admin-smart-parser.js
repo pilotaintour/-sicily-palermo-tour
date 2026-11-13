@@ -21,8 +21,14 @@ class AdminSmartParser {
 
     toggleParserBox() {
         const container = document.getElementById('parser-input-container');
-        if (container) {
-            container.classList.toggle('hidden');
+        if (!container) return;
+        const isHidden = container.classList.contains('hidden') || window.getComputedStyle(container).display === 'none';
+        if (isHidden) {
+            container.classList.remove('hidden');
+            container.style.display = 'block';
+        } else {
+            container.classList.add('hidden');
+            container.style.display = 'none';
         }
     }
 
