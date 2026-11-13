@@ -152,22 +152,19 @@ class AdminSmartParser {
 
         const computeScore = (matchIndex, rawMatch) => {
             let score = 0;
-            // 1. Posizione nell'intestazione/titolo del post
             if (matchIndex < 250) score += 120;
             else if (matchIndex < 500) score += 60;
 
-            // 2. Contesto precedente (emoticon, giorno della settimana, parole chiave evento)
             const contextBefore = text.substring(Math.max(0, matchIndex - 80), matchIndex).toLowerCase();
             if (/[\u{1F4C5}\u{1F4C6}\u{1F4C7}📅🗓️📆]/u.test(contextBefore)) score += 150;
             if (/domenica|sabato|venerdì|venerdi|giovedì|giovedi|mercoledì|mercoledi|martedì|martedi|lunedì|lunedi|data|giorno|partenza|evento/i.test(contextBefore)) score += 90;
 
-            // 3. Penalizzazione contesti storici/passati ("lo scorso", "nel 1990", "inaugurato nel")
             if (/lo scorso|scorsa|nel\s+\d{4}|inaugurat|costruit|edificat|storia|secolo|fondat/i.test(contextBefore)) score -= 250;
 
             return score;
         };
 
-        // 1. Date Multiple prima del Mese (es: "14, 15 e 16 Settembre 2026" o "14 e 15 Settembre")
+        // 1. Date Multiple prima del Mese
         const multiDayRegex = /\b(\d{1,2}(?:\s*(?:,|\+|e|ed|al|a|-)\s*\d{1,2})+)\s+(?:di\s+)?([a-zà-ú]{3,10})(?:\s+(\d{4}))?\b/gi;
         let match;
         while ((match = multiDayRegex.exec(text)) !== null) {
@@ -197,7 +194,7 @@ class AdminSmartParser {
             }
         }
 
-        // 2. Day + Month (es: "3 Gennaio 2027", "7 Febbraio 2025", "07 Feb")
+        // 2. Day + Month
         const dayMonthRegex = /\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:di\s+)?([a-zà-ú]{3,10})(?:\s+(\d{4}))?\b/gi;
         while ((match = dayMonthRegex.exec(text)) !== null) {
             const dayNum = parseInt(match[1], 10);
@@ -218,7 +215,7 @@ class AdminSmartParser {
             }
         }
 
-        // 3. Month + Day (es: "February 7", "Feb 7", "February 7 2025")
+        // 3. Month + Day
         const monthDayRegex = /\b([a-zà-ú]{3,10})\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(\d{4}))?\b/gi;
         while ((match = monthDayRegex.exec(text)) !== null) {
             const monthStr = match[1].toLowerCase();
@@ -239,7 +236,7 @@ class AdminSmartParser {
             }
         }
 
-        // 4. Numeric Date con riconoscimento intelligente DD/MM (es: "14/09/2026", "09/14/2026", "07/02/2025")
+        // 4. Numeric Date DD/MM
         const numDateRegex = /\b(\d{1,2})[\/\.-](\d{1,2})(?:[\/\.-](\d{2,4}))?\b/g;
         while ((match = numDateRegex.exec(text)) !== null) {
             const p1 = parseInt(match[1], 10);
@@ -271,7 +268,6 @@ class AdminSmartParser {
             }
         }
 
-        // Ordina per Punteggio di Rilevanza Decrescente (Data Evento Principale in Cima!)
         foundDates.sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             return a.index - b.index;
@@ -280,36 +276,79 @@ class AdminSmartParser {
         return foundDates;
     }
 
-    autoCompilaForm() {
+    autoCompilaForm(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         const textarea = document.getElementById('smart-parser-input');
+        const feedbackEl = document.getElementById('parser-status-feedback');
+
         if (!textarea) return;
 
         const rawText = textarea.value.trim();
         if (!rawText) {
-            alert('⚠️ Per favore incolla prima il testo del post nel riquadro.');
+            if (feedbackEl) {
+                feedbackEl.className = '';
+                feedbackEl.style.cssText = 'margin-top:12px; padding:12px; border-radius:8px; font-size:0.9rem; font-weight:bold; background:#fee2e2; color:#991b1b; display:block;';
+                feedbackEl.innerHTML = '⚠️ Per favore incolla prima il testo del post o del messaggio WhatsApp nel riquadro.';
+            } else {
+                alert('⚠️ Per favore incolla prima il testo del post nel riquadro.');
+            }
             return;
         }
 
         try {
             const parsed = this.parseText(rawText);
             this.applicaCampiForm(parsed);
+
             const orariStr = parsed.timeSlots.map(s => `${s.time} (53p)`).join(', ');
 
             let dateMsg = '';
             if (parsed.extractedDates && parsed.extractedDates.length > 1) {
                 const dateListStr = parsed.extractedDates.map(d => `${String(d.day).padStart(2, '0')}/${d.month}/${d.year}`).join(', ');
-                dateMsg = `📅 Estratte ${parsed.extractedDates.length} DATE FISSE:\n- ${dateListStr}\n(Impostata data principale: ${parsed.extractedDates[0].day}/${parsed.extractedDates[0].month}/${parsed.extractedDates[0].year})`;
+                dateMsg = `📅 ${parsed.extractedDates.length} Date Fisse trovate: ${dateListStr}`;
             } else if (parsed.extractedDates && parsed.extractedDates.length === 1) {
                 const d = parsed.extractedDates[0];
-                dateMsg = `📅 Estratta DATA FISSA:\n- ${String(d.day).padStart(2, '0')}/${d.month}/${d.year}`;
+                dateMsg = `📅 Data Fissa trovata: ${String(d.day).padStart(2, '0')}/${d.month}/${d.year}`;
             } else {
-                dateMsg = `🗓️ Nessuna data specifica trovata nel testo (Disponibilità settimanale)`;
+                dateMsg = `🗓️ Disponibilità Settimanale (nessuna data unica trovata)`;
             }
 
-            alert(`✨ Modulo auto-compilato con successo!\n\n${dateMsg}\n\n📍 Estratte ${parsed.pickupPoints.length} fermate:\n- ${parsed.pickupPoints.join('\n- ')}\n\n⏰ Estratti ${parsed.timeSlots.length} orari (53 posti):\n- ${orariStr}\n\nVerifica i campi e carica la locandina prima di salvare.`);
+            if (feedbackEl) {
+                feedbackEl.className = '';
+                feedbackEl.style.cssText = 'margin-top:12px; padding:14px; border-radius:10px; font-size:0.92rem; font-weight:bold; background:#dcfce7; color:#166534; border:1.5px solid #86efac; display:block;';
+                feedbackEl.innerHTML = `
+                    <div style="font-size:1.02rem; margin-bottom:6px;">✨ Modulo Auto-Compilato con Successo!</div>
+                    <div style="font-weight:normal; font-size:0.88rem; line-height:1.4;">
+                        • <strong>Titolo:</strong> ${window.escapeHtmlAdmin(parsed.title)}<br>
+                        • <strong>Prezzo:</strong> ${window.escapeHtmlAdmin(parsed.price)} | <strong>Categoria:</strong> ${window.escapeHtmlAdmin(parsed.category)}<br>
+                        • ${dateMsg}<br>
+                        • 📍 <strong>${parsed.pickupPoints.length} Fermate:</strong> ${window.escapeHtmlAdmin(parsed.pickupPoints.join(' • '))}<br>
+                        • ⏰ <strong>${parsed.timeSlots.length} Orari:</strong> ${orariStr}
+                    </div>
+                `;
+            }
+
+            // Scroll leggero verso il campo Titolo per mostrare visivamente i campi compilati
+            const titleEl = document.getElementById('title');
+            if (titleEl) {
+                setTimeout(() => {
+                    titleEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    titleEl.focus();
+                }, 300);
+            }
+
         } catch (err) {
             console.error('Errore durante l\'auto-compilazione:', err);
-            alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
+            if (feedbackEl) {
+                feedbackEl.className = '';
+                feedbackEl.style.cssText = 'margin-top:12px; padding:12px; border-radius:8px; font-size:0.9rem; font-weight:bold; background:#fee2e2; color:#991b1b; display:block;';
+                feedbackEl.innerHTML = '⚠️ Si è verificato un errore durante l\'analisi del testo: ' + (err.message || 'Verifica i dati manualmente.');
+            } else {
+                alert('⚠️ Si è verificato un errore durante l\'analisi del testo. Controlla i dati manualmente.');
+            }
         }
     }
 
@@ -335,7 +374,6 @@ class AdminSmartParser {
         const lowerText = fullText.toLowerCase();
 
         if (/ester|volo|aeroporto|spagna|francia|grecia|londra|parigi|croazia|albania|egitto|malta|islanda|svizzera|germania|europa|internaz|usa|stati uniti|america|giappone|asia|africa|dubai/i.test(lowerText)) {
-            // Rileva continente specifico per Tour Esteri
             if (/usa|stati uniti|new york|miami|los angeles|california|canada|mexico|messico|nord america/i.test(lowerText)) {
                 category = 'Tour Esteri (USA e Nord America)';
             } else if (/brasile|argentina|perù|peru|cile|colombia|america del sud|sud america|latina/i.test(lowerText)) {
@@ -356,7 +394,6 @@ class AdminSmartParser {
         } else if (/transfer|navetta|taxi|noleggio|shuttle|aeroporto transfer|bus transfer/i.test(lowerText)) {
             category = 'Trasporti';
         } else {
-            // Rileva regione specifica per i Tour Giornalieri
             if (/campania|napoli|costiera|amalfi|pompei|caserta|salerno|sorrento/i.test(lowerText)) {
                 category = 'Tour Giornalieri (Campania)';
             } else if (/lazio|roma|viterbo|latina|tivoli/i.test(lowerText)) {
@@ -386,37 +423,29 @@ class AdminSmartParser {
             availabilityType = 'singleDate';
             singleFixedDate = extractedDates[0].iso;
 
-            // Per la data fissa evento unico, seleziona SOLO il singolo giorno della settimana della data scelta
             const parts = singleFixedDate.split('-');
             const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-            const dayOfWeek = dt.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+            const dayOfWeek = dt.getDay();
             activeWeekDays.push(dayOfWeek);
         }
 
-        // 5. Estrazione Punti di Raccolta e Orari (SOLO Luoghi Effettivi, ESCLUSI Termini/Rimborsi/Note/Date/Indirizzi Agenzia)
+        // 5. Estrazione Punti di Raccolta
         const pickupPoints = [];
-
-        // Parole/Frasi da escludere (termini, rimborsi, indirizzi agenzia, contatti)
         const excludeRegex = /garantit|raggiungiment|mancat|sostituzion|rimbors|penal|annullam|cancellaz|richiesta|programma|quota|prezzo|comprende|esclude|incluso|inclusi|raduno|regolament|nota\b|note\b|info\b|informazion|condizion|termini|sconto|commissione|organizzat|assicuraz|bersagliere|pm eventi|agenzia|prenotazioni|telefono|tel\.|cell\./i;
-
-        // Mesi e Giorni per evitare che le righe di data dell'evento vengano scambiate per punti di partenza
         const dateKeywordsRegex = /gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|domenica|sabato|venerdì|venerdi|giovedì|giovedi|mercoledì|mercoledi|martedì|martedi|lunedì|lunedi/i;
-
         const locationKeywordsRegex = /giotto|villabate|bagheria|politeama|cattedrale|teatro|massimo|stazione|porto|molo|aeroporto|sferracavallo|mondello|monreale|agrigento|catania|trapani|messina|siracusa|enna|caltanissetta|ragusa|piazza|piazzale|via\b|viale\b|corso\b|largo\b|svincolo|casello|distributore|hotel|bar\b|pasticceria|rotonda|pensilina|fermata/i;
 
         lines.forEach((line, index) => {
-            if (index === 0) return; // Salta la prima riga (titolo del post)
+            if (index === 0) return;
             let cleanLine = line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}👉📍✅🚌•\*\-\d+\.]/gu, ' ').trim();
             cleanLine = cleanLine.replace(/^[:\s\*-]+/g, '').replace(/[:\s]+$/g, '').trim();
 
             const lower = line.toLowerCase();
 
-            // 1. Salta se contiene regole, termini, indirizzi agenzia o date dell'evento
             if (excludeRegex.test(lower) || dateKeywordsRegex.test(lower)) {
                 return;
             }
 
-            // 2. Salta intestazioni di sezione (es. "Punti di raccolta:", "Luoghi di partenza:", "Orari:")
             if (cleanLine.length < 3 || /^(punti|luoghi|orari|partenze|fermate|ritrovo|stoppings)(\s+di\s+raccolta|\s+di\s+partenza)?$/i.test(cleanLine)) {
                 return;
             }
@@ -439,7 +468,7 @@ class AdminSmartParser {
             pickupPoints.push('Piazzale Giotto (Ore 09:00)', 'Villabate (Ore 09:20)', 'Bagheria (Ore 09:40)');
         }
 
-        // 5b. Estrazione Orari Dinamici nel testo (con capienza predefinita di 53 posti)
+        // 5b. Estrazione Orari Dinamici
         const extractedTimeSlots = [];
         const seenTimes = new Set();
 
@@ -476,7 +505,6 @@ class AdminSmartParser {
             }
         }
 
-        // Estrazione orari anche dai punti di raccolta estratti (es. "Piazzale Giotto (Ore 09:00)")
         if (pickupPoints && pickupPoints.length > 0) {
             pickupPoints.forEach(pt => {
                 const matchPt = pt.match(/(?:Ore|ore|at)?\s*([0-1]?[0-9]|2[0-3])[:\.](([0-5][0-9]))/i);
@@ -498,7 +526,7 @@ class AdminSmartParser {
             extractedTimeSlots.push({ time: '09:00', capacity: 53 });
         }
 
-        // 6. Estrazione Intelligente Servizi Inclusi & Caratteristiche dal testo
+        // 6. Servizi
         const servizi = [];
 
         if (/\b(guida|guide|accompagnament)\b/.test(lowerText)) {
@@ -544,7 +572,7 @@ class AdminSmartParser {
             servizi.push('Tour Multilingua (ITA/ENG)');
         }
 
-        // 7. Descrizione Breve e Completa
+        // 7. Descrizioni
         const shortDesc = lines.slice(0, 3).join(' ').substring(0, 160) + '...';
         const fullDesc = fullText;
 
@@ -565,41 +593,40 @@ class AdminSmartParser {
     }
 
     applicaCampiForm(data) {
-        // Titolo
+        if (!data) return;
+
         const titleEl = document.getElementById('title');
-        if (titleEl) titleEl.value = data.title;
+        if (titleEl) {
+            titleEl.value = data.title || '';
+            this.evidenziaCampo(titleEl);
+        }
 
-        // Categoria
         const categoryEl = document.getElementById('category');
-        if (categoryEl) categoryEl.value = data.category;
+        if (categoryEl) {
+            categoryEl.value = data.category || 'Tour Giornalieri (Sicilia)';
+            this.evidenziaCampo(categoryEl);
+        }
 
-        // Durata
         const durationEl = document.getElementById('duration');
-        if (durationEl) durationEl.value = '1 Giorno';
+        if (durationEl) {
+            durationEl.value = '1 Giorno';
+            this.evidenziaCampo(durationEl);
+        }
 
-        // Prezzo
         const priceEl = document.getElementById('price');
-        if (priceEl) priceEl.value = data.price;
+        if (priceEl) {
+            priceEl.value = data.price || '30,00€ a persona';
+            this.evidenziaCampo(priceEl);
+        }
 
-        // In Evidenza
         const featuredEl = document.getElementById('featured');
         if (featuredEl) featuredEl.value = 'true';
 
-        // Posizionamento Speciale (Consigliato & Trending)
-        const isConsigliatoEl = document.getElementById('is-consigliato');
-        if (isConsigliatoEl) isConsigliatoEl.checked = true;
-
-        const isAllaModaEl = document.getElementById('is-alla-moda');
-        if (isAllaModaEl) isAllaModaEl.checked = true;
-
-        // Disponibilità e Data Fissa Evento
         if (data.availabilityType === 'singleDate' && data.singleFixedDate) {
             const radioSingle = document.querySelector('input[name="availability-type"][value="singleDate"]');
-            if (radioSingle) {
-                radioSingle.checked = true;
-                if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
-                    window.gestisciTipoDisponibilitaTour('singleDate');
-                }
+            if (radioSingle) radioSingle.checked = true;
+            if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
+                window.gestisciTipoDisponibilitaTour('singleDate');
             }
             const dateInput = document.getElementById('single-fixed-date-input');
             if (dateInput) {
@@ -607,18 +634,16 @@ class AdminSmartParser {
                 if (typeof window.aggiornaEtichettaDataFissaLeggibile === 'function') {
                     window.aggiornaEtichettaDataFissaLeggibile(data.singleFixedDate);
                 }
+                this.evidenziaCampo(dateInput);
             }
         } else {
             const radioWeekly = document.querySelector('input[name="availability-type"][value="weekly"]');
-            if (radioWeekly) {
-                radioWeekly.checked = true;
-                if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
-                    window.gestisciTipoDisponibilitaTour('weekly');
-                }
+            if (radioWeekly) radioWeekly.checked = true;
+            if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
+                window.gestisciTipoDisponibilitaTour('weekly');
             }
         }
 
-        // Seleziona i giorni della settimana attivi per le date estratte
         if (data.activeWeekDays && data.activeWeekDays.length > 0) {
             document.querySelectorAll('input[name="giorno-check"]').forEach(c => {
                 c.checked = data.activeWeekDays.includes(parseInt(c.value, 10));
@@ -633,7 +658,6 @@ class AdminSmartParser {
             if (checkAll) checkAll.checked = true;
         }
 
-        // Punti di Raccolta Dinamici (FORZATI SULL'ARRAY GLOBALE ED AGGIORNAMENTO RENDERING)
         if (!window.puntiRaccoltaCorrenti || !Array.isArray(window.puntiRaccoltaCorrenti)) {
             window.puntiRaccoltaCorrenti = [];
         }
@@ -647,7 +671,6 @@ class AdminSmartParser {
             window.renderCampiPuntiRaccolta();
         }
 
-        // Capienza Bus Condivisa (Attiva per default per Bus da 53 posti)
         const busCheckMain = document.getElementById('shared-bus-capacity-main-check');
         const busCheckModal = document.getElementById('shared-bus-capacity-check');
         if (busCheckMain) busCheckMain.checked = true;
@@ -656,7 +679,6 @@ class AdminSmartParser {
             window.sincronizzaCheckBus(true);
         }
 
-        // Capienza fissa 53 posti per TUTTI gli orari estratti dal testo
         if (!window.orariCorrenti || !Array.isArray(window.orariCorrenti)) {
             window.orariCorrenti = [];
         }
@@ -670,20 +692,43 @@ class AdminSmartParser {
             window.renderCampiOrari();
         }
 
-        // Servizi Inclusi & Caratteristiche Checkboxes
         const serviziChecks = document.querySelectorAll('input[name="servizio-check"]');
         serviziChecks.forEach(c => {
             c.checked = (data.servizi && Array.isArray(data.servizi)) ? data.servizi.includes(c.value) : false;
         });
 
-        // Descrizioni
         const shortDescEl = document.getElementById('short-desc');
-        if (shortDescEl) shortDescEl.value = data.shortDesc;
+        if (shortDescEl) {
+            shortDescEl.value = data.shortDesc || '';
+            this.evidenziaCampo(shortDescEl);
+        }
 
         const fullDescEl = document.getElementById('full-desc');
-        if (fullDescEl) fullDescEl.value = data.fullDesc;
+        if (fullDescEl) {
+            fullDescEl.value = data.fullDesc || '';
+            this.evidenziaCampo(fullDescEl);
+        }
+    }
+
+    evidenziaCampo(el) {
+        if (!el) return;
+        const prevBorder = el.style.borderColor;
+        const prevBg = el.style.backgroundColor;
+        el.style.borderColor = '#0284c7';
+        el.style.backgroundColor = '#f0f9ff';
+        setTimeout(() => {
+            el.style.borderColor = prevBorder || '';
+            el.style.backgroundColor = prevBg || '';
+        }, 1500);
     }
 }
 
 // Istanza globale del controller Smart Parser
 window.adminSmartParser = new AdminSmartParser();
+
+function autoCompilaModuloSmart(event) {
+    if (window.adminSmartParser) {
+        window.adminSmartParser.autoCompilaForm(event);
+    }
+}
+window.autoCompilaModuloSmart = autoCompilaModuloSmart;

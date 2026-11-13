@@ -76,7 +76,7 @@
                                     <label style="color: #0369a1; font-weight: 800; font-size: 0.98rem; margin: 0; display: flex; align-items: center; gap: 6px;">
                                         ✨ Auto-compilatore Intelligente da Post WhatsApp / Social
                                     </label>
-                                    <button type="button" onclick="adminSmartParser.toggleParserBox()" class="btn-secondary btn-small" style="background: #0284c7; font-weight: 700;">
+                                    <button type="button" onclick="if(window.adminSmartParser) window.adminSmartParser.toggleParserBox()" class="btn-secondary btn-small" style="background: #0284c7; font-weight: 700;">
                                         ▼ Apri / Chiudi Parser
                                     </button>
                                 </div>
@@ -84,11 +84,12 @@
 
                                 <div id="parser-input-container" style="margin-top: 10px;">
                                     <textarea id="smart-parser-input" rows="4" placeholder="Incolla qui il testo del post (es. CARNEVALE DI MISTERBIANCO, Piazzale Giotto ore 10:00, Villabate ore 10:20...)" style="width: 100%; padding: 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.88rem; background: #ffffff; margin-bottom: 10px;"></textarea>
-                                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                                        <button type="button" onclick="adminSmartParser.autoCompilaForm()" class="btn-primary" style="background: #0284c7; font-weight: 700; padding: 10px 22px; font-size: 0.95rem;">
+                                    <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                                        <button type="button" id="btn-auto-compila-smart" onclick="autoCompilaModuloSmart(event)" class="btn-primary" style="background: #0284c7; font-weight: 700; padding: 12px 26px; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);">
                                             ⚡ Auto-compila Modulo
                                         </button>
                                     </div>
+                                    <div id="parser-status-feedback" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold;"></div>
                                 </div>
                             </div>
 
