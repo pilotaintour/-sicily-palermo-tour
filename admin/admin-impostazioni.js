@@ -9,7 +9,7 @@ let fotoHeroCorrenti = [];
 function caricaNumeroWhatsApp() {
     const input = document.getElementById('wa-number-input');
     if (input) {
-        input.value = localStorage.getItem(WA_STORAGE_KEY_MODULE) || '393000000000';
+        input.value = localStorage.getItem(WA_STORAGE_KEY_MODULE) || '393717358832';
     }
 }
 

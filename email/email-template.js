@@ -24,7 +24,7 @@ const i18nEmail = {
         instructions: "📍 Vi preghiamo di arrivare 10 minuti prima dell'orario previsto al punto d'incontro. Consigliamo scarpe comode e macchina fotografica. Non sono previste riduzioni o rimborsi nel caso in cui il tour si svolga in presenza di condizioni meteorologiche avverse.",
         helpTitle: "💬 Hai domande o bisogno di assistenza in privato?",
         helpText: "Se hai qualsiasi dubbio, comunica all'amministratore il tuo **Codice** oppure il **Riferimento Transazione**:",
-        helpBtn: "💬 Contatta l'Admin su WhatsApp (+39 340 1234567)",
+        helpBtn: "💬 Contatta l'Admin su WhatsApp (+39 371 735 8832)",
         footerText: "Siamo a tua completa disposizione per qualsiasi informazione o esigenza particolare. A presto a Palermo!",
         subFooter: "Sicily Palermo Tour - La tua guida speciale a Palermo"
     },
@@ -144,7 +144,7 @@ class EmailTemplateBuilder {
         const lang = bookingData.language || 'Italiano';
         const country = bookingData.country || 'Italia';
         const billingAddress = bookingData.billingAddress || 'N/D';
-        const waNum = (localStorage.getItem('spt_wa_number') || '393401234567').replace(/[^0-9]/g, '');
+        const waNum = (localStorage.getItem('spt_wa_number') || '393717358832').replace(/[^0-9]/g, '');
 
         let partecipantiHtml = '';
         if (bookingData.participantsList && Array.isArray(bookingData.participantsList) && bookingData.participantsList.length > 0) {

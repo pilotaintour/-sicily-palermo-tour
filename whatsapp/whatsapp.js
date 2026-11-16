@@ -3,7 +3,7 @@
  */
 
 const WA_STORAGE_KEY = 'spt_whatsapp_number';
-const DEFAULT_WA_NUMBER = '393000000000'; // Sostituibile dall'Admin in qualsiasi momento
+const DEFAULT_WA_NUMBER = '393717358832'; // Numero Ufficiale Sicily Palermo Tour
 
 // Recupera il numero configurato dall'Admin
 function getNumeroWhatsApp() {
