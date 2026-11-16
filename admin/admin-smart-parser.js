@@ -622,19 +622,23 @@ class AdminSmartParser {
         const featuredEl = document.getElementById('featured');
         if (featuredEl) featuredEl.value = 'true';
 
-        if (data.availabilityType === 'singleDate' && data.singleFixedDate) {
+        if (data.availabilityType === 'singleDate') {
             const radioSingle = document.querySelector('input[name="availability-type"][value="singleDate"]');
             if (radioSingle) radioSingle.checked = true;
             if (typeof window.gestisciTipoDisponibilitaTour === 'function') {
                 window.gestisciTipoDisponibilitaTour('singleDate');
             }
-            const dateInput = document.getElementById('single-fixed-date-input');
-            if (dateInput) {
-                dateInput.value = data.singleFixedDate;
-                if (typeof window.aggiornaEtichettaDataFissaLeggibile === 'function') {
-                    window.aggiornaEtichettaDataFissaLeggibile(data.singleFixedDate);
-                }
-                this.evidenziaCampo(dateInput);
+
+            if (data.extractedDates && data.extractedDates.length > 0) {
+                window.dateFisseCorrenti = data.extractedDates.map(d => d.iso);
+            } else if (data.singleFixedDate) {
+                window.dateFisseCorrenti = String(data.singleFixedDate).split(',').map(s => s.trim()).filter(Boolean);
+            } else {
+                window.dateFisseCorrenti = [''];
+            }
+
+            if (typeof window.renderCampiDateFisse === 'function') {
+                window.renderCampiDateFisse();
             }
         } else {
             const radioWeekly = document.querySelector('input[name="availability-type"][value="weekly"]');

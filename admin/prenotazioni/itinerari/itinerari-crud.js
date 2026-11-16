@@ -17,6 +17,103 @@ if (typeof window.escapeHtmlAdmin !== 'function') {
 
 const STORAGE_KEY = 'spt_itinerari';
 
+if (!window.dateFisseCorrenti || !Array.isArray(window.dateFisseCorrenti)) {
+    window.dateFisseCorrenti = [''];
+}
+
+function formatDateReadableIt(isoStr) {
+    if (!isoStr) return '';
+    const parts = String(isoStr).split('-');
+    if (parts.length !== 3) return isoStr;
+    const y = parts[0];
+    const m = parseInt(parts[1], 10) - 1;
+    const d = parseInt(parts[2], 10);
+    const monthNamesIt = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    if (m >= 0 && m < 12 && d >= 1 && d <= 31) {
+        return `${d} ${monthNamesIt[m]} ${y}`;
+    }
+    return isoStr;
+}
+
+function renderCampiDateFisse() {
+    const container = document.getElementById('date-fisse-container');
+    if (!container) return;
+
+    if (!Array.isArray(window.dateFisseCorrenti) || window.dateFisseCorrenti.length === 0) {
+        window.dateFisseCorrenti = [''];
+    }
+
+    container.innerHTML = window.dateFisseCorrenti.map((isoVal, idx) => {
+        const readable = formatDateReadableIt(isoVal);
+        return `
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #fffbf5; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #fde047;">
+                <span style="font-weight: 800; color: #d97706; font-size: 0.95rem; min-width: 22px;">${idx + 1}.</span>
+                <input type="date"
+                       class="single-fixed-date-item"
+                       value="${isoVal || ''}"
+                       onchange="aggiornaValoriDateFisse()"
+                       style="padding: 8px 12px; border: 1.5px solid #d97706; border-radius: 8px; font-weight: 800; color: #0b2545; font-size: 0.95rem; background: #ffffff;">
+                ${readable ? `<span style="font-weight: 800; color: #0369a1; font-size: 0.88rem; background: #e0f2fe; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd;">📅 Data confermata: ${readable}</span>` : ''}
+                ${window.dateFisseCorrenti.length > 1 ? `<button type="button" class="btn-danger btn-small" onclick="rimuoviCampoDataFissa(${idx})" title="Rimuovi questa data" style="padding: 6px 10px; margin-left: auto;">🗑️</button>` : ''}
+            </div>
+        `;
+    }).join('');
+
+    aggiornaInputHiddenDateFisse();
+}
+
+function aggiungiCampoDataFissa(valore = '') {
+    if (!Array.isArray(window.dateFisseCorrenti)) window.dateFisseCorrenti = [];
+    window.dateFisseCorrenti.push(valore);
+    renderCampiDateFisse();
+}
+
+function rimuoviCampoDataFissa(index) {
+    if (!Array.isArray(window.dateFisseCorrenti) || window.dateFisseCorrenti.length <= 1) return;
+    window.dateFisseCorrenti.splice(index, 1);
+    renderCampiDateFisse();
+}
+
+function aggiornaValoriDateFisse() {
+    const inputs = document.querySelectorAll('.single-fixed-date-item');
+    window.dateFisseCorrenti = Array.from(inputs).map(inp => inp.value).filter(Boolean);
+    if (window.dateFisseCorrenti.length === 0) {
+        window.dateFisseCorrenti = [''];
+    }
+    aggiornaInputHiddenDateFisse();
+    renderCampiDateFisse();
+}
+
+function aggiornaInputHiddenDateFisse() {
+    const hiddenInput = document.getElementById('single-fixed-date-input');
+    const validDates = Array.isArray(window.dateFisseCorrenti) ? window.dateFisseCorrenti.filter(Boolean) : [];
+    const joinedStr = validDates.join(', ');
+    if (hiddenInput) {
+        hiddenInput.value = joinedStr;
+    }
+
+    if (validDates.length > 0) {
+        const activeDays = new Set();
+        validDates.forEach(isoStr => {
+            const parts = String(isoStr).split('-');
+            if (parts.length === 3) {
+                const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                activeDays.add(dt.getDay());
+            }
+        });
+        document.querySelectorAll('input[name="giorno-check"]').forEach(c => {
+            c.checked = activeDays.has(parseInt(c.value, 10));
+        });
+        const checkAll = document.getElementById('check-all-days');
+        if (checkAll) checkAll.checked = (activeDays.size === 7);
+    }
+}
+
+window.renderCampiDateFisse = renderCampiDateFisse;
+window.aggiungiCampoDataFissa = aggiungiCampoDataFissa;
+window.rimuoviCampoDataFissa = rimuoviCampoDataFissa;
+window.aggiornaValoriDateFisse = aggiornaValoriDateFisse;
+
 function pulisciVecchiItinerariDemo(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
@@ -129,61 +226,6 @@ function sincronizzaCheckBus(checked) {
     if (modalCheck) modalCheck.checked = checked;
 }
 
-function sincronizzaGiornoSettimanaDaDataFissa(isoStr) {
-    if (!isoStr) return;
-    const parts = String(isoStr).split('-');
-    if (parts.length === 3) {
-        const dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-        const dayOfWeek = dt.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
-        document.querySelectorAll('input[name="giorno-check"]').forEach(c => {
-            c.checked = (parseInt(c.value, 10) === dayOfWeek);
-        });
-        const checkAll = document.getElementById('check-all-days');
-        if (checkAll) checkAll.checked = false;
-    }
-}
-
-function aggiornaEtichettaDataFissaLeggibile(isoStr) {
-    const badge = document.getElementById('single-fixed-date-readable');
-
-    if (isoStr) {
-        const availabilityTypeEl = document.querySelector('input[name="availability-type"]:checked');
-        if (availabilityTypeEl && availabilityTypeEl.value === 'singleDate') {
-            sincronizzaGiornoSettimanaDaDataFissa(isoStr);
-        }
-    }
-
-    if (!badge) return;
-
-    if (!isoStr) {
-        badge.style.display = 'none';
-        badge.textContent = '';
-        return;
-    }
-
-    const parts = String(isoStr).split('-');
-    if (parts.length === 3) {
-        const y = parts[0];
-        const m = parseInt(parts[1], 10) - 1;
-        const d = parseInt(parts[2], 10);
-
-        const monthNamesIt = [
-            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
-        ];
-
-        if (m >= 0 && m < 12 && d >= 1 && d <= 31) {
-            badge.textContent = `📅 Data confermata: ${d} ${monthNamesIt[m]} ${y}`;
-            badge.style.display = 'inline-block';
-            return;
-        }
-    }
-
-    badge.style.display = 'none';
-}
-window.sincronizzaGiornoSettimanaDaDataFissa = sincronizzaGiornoSettimanaDaDataFissa;
-window.aggiornaEtichettaDataFissaLeggibile = aggiornaEtichettaDataFissaLeggibile;
-
 function gestisciTipoDisponibilitaTour(type) {
     const boxDate = document.getElementById('box-single-fixed-date');
     if (!boxDate) return;
@@ -191,10 +233,7 @@ function gestisciTipoDisponibilitaTour(type) {
     if (type === 'singleDate') {
         boxDate.classList.remove('hidden');
         boxDate.style.display = 'block';
-        const dateInput = document.getElementById('single-fixed-date-input');
-        if (dateInput && dateInput.value) {
-            aggiornaEtichettaDataFissaLeggibile(dateInput.value);
-        }
+        renderCampiDateFisse();
     } else {
         boxDate.classList.add('hidden');
         boxDate.style.display = 'none';
@@ -315,11 +354,16 @@ function preparaModifica(id) {
         radioType.checked = true;
         gestisciTipoDisponibilitaTour(availType);
     }
-    if (document.getElementById('single-fixed-date-input')) {
+
+    if (item.singleFixedDate || availType === 'singleDate') {
         const val = item.singleFixedDate || '';
-        document.getElementById('single-fixed-date-input').value = val;
-        aggiornaEtichettaDataFissaLeggibile(val);
+        window.dateFisseCorrenti = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [''];
+        renderCampiDateFisse();
+    } else {
+        window.dateFisseCorrenti = [''];
+        renderCampiDateFisse();
     }
+
     sincronizzaCheckBus(!!item.sharedBusCapacity);
     document.getElementById('featured').value = item.featured || 'false';
     const isConsigliatoEl = document.getElementById('is-consigliato');
@@ -383,10 +427,10 @@ function resetForm() {
         radioDefault.checked = true;
         gestisciTipoDisponibilitaTour('weekly');
     }
-    if (document.getElementById('single-fixed-date-input')) {
-        document.getElementById('single-fixed-date-input').value = '';
-        aggiornaEtichettaDataFissaLeggibile('');
-    }
+
+    window.dateFisseCorrenti = [''];
+    renderCampiDateFisse();
+
     sincronizzaCheckBus(false);
     const fileInput = document.getElementById('image-file-input');
     if (fileInput) fileInput.value = '';

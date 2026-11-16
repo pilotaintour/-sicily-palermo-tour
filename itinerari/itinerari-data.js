@@ -13,6 +13,27 @@ const DEFAULT_ITINERARIES = [];
 let itinerarioSelezionatoAttuale = null;
 let categoriaSelezionata = 'Tutti';
 
+function formatSingleFixedDateBadge(isoStr) {
+    if (!isoStr) return '';
+    const dates = String(isoStr).split(',').map(s => s.trim()).filter(Boolean);
+    if (dates.length === 0) return '';
+
+    if (dates.length === 1) {
+        const parts = dates[0].split('-');
+        if (parts.length === 3) {
+            return `📌 Evento: ${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return `📌 Evento: ${dates[0]}`;
+    }
+
+    const shortFormatted = dates.map(d => {
+        const parts = d.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
+    }).join(', ');
+
+    return `📌 Date (${dates.length}): ${shortFormatted}`;
+}
+
 function pulisciVecchiItinerariDemo(lista) {
     if (!Array.isArray(lista)) return [];
     return lista.filter(item => {
@@ -178,7 +199,7 @@ function renderTourCardHTML(tour) {
                     <span class="badge">${escapeHtml(tour.category || 'Tour')}</span>
                     ${tour.isConsigliato ? '<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:800;">⭐ Consigliato</span>' : ''}
                     ${tour.isAllaModa ? '<span class="badge" style="background:#fee2e2; color:#991b1b; font-weight:800;">🔥 Trending</span>' : ''}
-                    ${tour.singleFixedDate ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:800;">📌 Evento: ${escapeHtml(tour.singleFixedDate)}</span>` : ''}
+                    ${tour.singleFixedDate ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:800;">${formatSingleFixedDateBadge(tour.singleFixedDate)}</span>` : ''}
                     ${tour.images && tour.images.length > 1 ? `<span class="badge" style="background:#f1f5f9; color:#475569;">📷 ${tour.images.length} Foto</span>` : ''}
                 </div>
                 <h3>${escapeHtml(tour.title)}</h3>
